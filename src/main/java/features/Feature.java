@@ -1,4 +1,4 @@
-package extractors;
+package features;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
