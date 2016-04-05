@@ -1,3 +1,5 @@
+import repository.Git;
+
 /**
  * Created on 05.04.2016.
  *
@@ -11,6 +13,7 @@ public class FeatureExtractor {
         // CLI Parameter und Config aus .cfg File einlesen
         // Relevante Fileversionen aus DB holen
         // Für jede Fileversion:
+        Git git = new Git(1);
         //  - File/Source-Code aus git holen (repository-package)
         //  - AST aus Code parsen
         //  - Alle Feature Extractors drüberlaufen lassen
