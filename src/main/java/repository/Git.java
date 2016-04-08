@@ -1,6 +1,9 @@
 package repository;
 
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
@@ -35,6 +38,16 @@ public class Git {
     public char[] getSourceCode(String path, String commitSHA) {
         // hier kommt cooode rein!
         char[] code = null;
+
+        RevWalk walk = new RevWalk(repository);
+        ObjectId commitId = ObjectId.fromString(commitSHA);
+        try {
+            RevCommit commit = walk.parseCommit(commitId);
+            System.out.print(commit);
+            walk.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return code;
     }

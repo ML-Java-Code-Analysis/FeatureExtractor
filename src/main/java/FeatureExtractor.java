@@ -21,6 +21,7 @@ public class FeatureExtractor {
 
 
         Git git = new Git(1);
+        git.getSourceCode("","d347d2939fb04d4634a398b6d331dab6acfd75f4");
         //  - File/Source-Code aus git holen (repository-package)
         //  - AST aus Code parsen
         //  - Alle Feature Extractors drüberlaufen lassen
