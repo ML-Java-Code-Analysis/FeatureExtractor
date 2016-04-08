@@ -1,5 +1,5 @@
 import repository.Git;
-
+import utils.Config;
 /**
  * Created on 05.04.2016.
  *
@@ -13,9 +13,17 @@ public class FeatureExtractor {
         // CLI Parameter und Config aus .cfg File einlesen
         // Relevante Fileversionen aus DB holen
         // Für jede Fileversion:
+
+
+        Config cfg = new Config();
+        cfg.parse(args);
+        cfg.readConfigFile();
+
+
         Git git = new Git(1);
         //  - File/Source-Code aus git holen (repository-package)
         //  - AST aus Code parsen
         //  - Alle Feature Extractors drüberlaufen lassen
     }
+
 }

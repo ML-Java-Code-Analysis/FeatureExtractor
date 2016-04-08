@@ -21,9 +21,10 @@ public class Git {
     public Git(int repositoryId){
 
         String repositoryPath = "P:\\Studium\\FS2016\\BA\\GitHubProjects\\LED-Cube-Prototyper";
+        String gitPath = repositoryPath + "\\.git";
 
         repositoryBuilder.setMustExist(true);
-        repositoryBuilder.setGitDir(new File(repositoryPath));
+        repositoryBuilder.setGitDir(new File(gitPath));
         try {
             repository = repositoryBuilder.build();
         } catch (IOException e) {
