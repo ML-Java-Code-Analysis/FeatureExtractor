@@ -36,7 +36,15 @@ public class Config {
     private Options options = new Options();
     private CommandLineParser parser = new GnuParser();
 
+    /**
+     * This method reads and parses command line arguments
+     * @param args command line arguments.
+     * @return Nothing.
+     * @exception ParseException On input error.
+     * @see ParseException
+     */
     public void parse(String[] args) {
+
         options.addOption(configFileOption);
         CommandLineParser parser = new GnuParser();
 
@@ -47,11 +55,19 @@ public class Config {
             }
         }
         catch(ParseException e) {
+            // TODO Entscheidung Programmabbruch OK? Ja
+            // TODO Logging
             System.err.println("Parsing failed. Reason: " + e.getMessage());
         }
 
     }
 
+    /**
+     * This method reads and parses the config file. Assigns the config values to the vars
+     * @return Nothing.
+     * @exception IOException On input error.
+     * @see IOException
+     */
     public void readConfigFile() {
         try {
             Wini iniFileParser = new Wini(new File(configFile));
@@ -63,9 +79,14 @@ public class Config {
             databasePort = iniFileParser.get(DATABASESECTION, "database_port", int.class);
             repositoryName = iniFileParser.get(REPOSITORYSECTION, "name", String.class);
         } catch (IOException e) {
+            // TODO Entscheidung Programmabbruch OK? Ja
+            // TODO Logging
             System.err.println("Could not read Configfile. Reason: " + e.getMessage());
         }
     }
+
+    /** getters for config parameters
+     */
     public String getConfigFile() {
         return configFile;
     }

@@ -2,6 +2,7 @@ package repository;
 
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.InvalidObjectIdException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -28,10 +29,16 @@ import java.util.Map;
  */
 public class Git {
 
-    FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
-    Repository repository;
+    private FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+    private Repository repository;
 
-
+    /**
+     * Initialize git repository
+     * @args Repositorypath
+     * @return Nothing.
+     * @exception IOException On input error.
+     * @see IOException
+     */
     public Git(String path){
 
         String repositoryPath = path;
@@ -42,10 +49,20 @@ public class Git {
         try {
             repository = repositoryBuilder.build();
         } catch (IOException e) {
+            // TODO Entscheidung Programmabbruch OK? Ja
+            // TODO Logging
             e.printStackTrace();
         }
     }
 
+    /**
+     * Searches for file in commit and returns the source-code
+     * @args path of the file, commit id (SHA string)
+     * @return source code fo file
+     * @exception IOException On input error.
+     * @exception FileNotFoundException When file is not found in commit
+     * @see IOException
+     */
     public char[] getSourceCode(String path, String commitSHA) throws FileNotFoundException {
         char[] code = null;
 
@@ -63,16 +80,36 @@ public class Git {
 
         } catch (IOException e) {
             e.printStackTrace();
+            // TODO Entscheidung Programmabbruch OK? Nein??
+            // TODO Logging
         }
 
         return code;
     }
+
+    /**
+     * List all files for commit
+     * @args commit id (SHA string)
+     * @return hashmap(Path: FileId) of all files
+     * @exception InvalidObjectIdException If commit is not found
+     * @exceotion IncorrectObjectTypeException ??
+     * @exceotion CorruptObjectException ??
+     * @exceotion MissingObjectException ??
+     * @exceotion IOException if file could not be acccess during file scan
+     */
     private Map<String, ObjectId> getFiles(String commitSHA) {
 
         Map<String, ObjectId> files = new HashMap<String, ObjectId>();
 
         RevWalk walk = new RevWalk(repository);
-        ObjectId commitId = ObjectId.fromString(commitSHA);
+        ObjectId commitId = null;
+        try {
+            commitId = ObjectId.fromString(commitSHA);
+        } catch ( InvalidObjectIdException e ) {
+            // TODO Entscheidung Programmabbruch OK? Nein ???
+            // TODO Logging
+            e.printStackTrace();
+        }
         try {
             RevCommit commit = walk.parseCommit(commitId);
 
@@ -89,7 +126,10 @@ public class Git {
             }
             walk.dispose();
 
-        } catch (IncorrectObjectTypeException e) {
+        }
+        // TODO Entscheidung Programmabbruch OK? Nein ???
+        // TODO Logging
+        catch (IncorrectObjectTypeException e) {
             e.printStackTrace();
         } catch (CorruptObjectException e) {
             e.printStackTrace();
@@ -101,7 +141,11 @@ public class Git {
         return files;
     }
 
-    private void closeRepository() {
+    /**
+     * Close Repository
+     * @return Nothing
+     */
+    public void closeRepository() {
         repository.close();
     }
 }

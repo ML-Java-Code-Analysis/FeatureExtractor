@@ -11,28 +11,31 @@ import java.io.FileNotFoundException;
 public class FeatureExtractor {
 
     public static void main(String[] args) {
-        // Hier kommt der Start-Code rein
-
-        // CLI Parameter und Config aus .cfg File einlesen
-        // Relevante Fileversionen aus DB holen
-        // Für jede Fileversion:
-
 
         Config cfg = new Config();
+        //Arugment parsing
         cfg.parse(args);
+        //Read config file
         cfg.readConfigFile();
 
-
+        // TODO Relevante Fileversionen aus DB holen
+        // TODO Repository Path auf DB holen
+        // Repository intialisieren
         Git git = new Git("P:\\Studium\\FS2016\\BA\\GitHubProjects\\LED-Cube-Prototyper");
+        // TODO Für jede Fileversion
+
+        //  - File/Source-Code aus git holen (repository-package)
         try {
             char[] code = git.getSourceCode("Controller.py","31b6d396ba14fcb0e61650937f5d1754c10958bf");
             System.out.println(code);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        //  - File/Source-Code aus git holen (repository-package)
-        //  - AST aus Code parsen
-        //  - Alle Feature Extractors drüberlaufen lassen
+
+        git.closeRepository();
+
+        // TODO - AST aus Code parsen
+        // TODO - Alle Feature Extractors drüberlaufen lassen
     }
 
 }
