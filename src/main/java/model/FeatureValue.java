@@ -1,3 +1,9 @@
+/**
+ * Created on 09.04.2016.
+ *
+ * @author ymeke
+ */
+
 package model;
 
 import org.hibernate.HibernateException;
@@ -13,12 +19,6 @@ import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created on 09.04.2016.
- *
- * @author ymeke
- */
-
 @Entity
 @Table(name = "feature_value")
 public class FeatureValue implements Serializable {
@@ -26,6 +26,7 @@ public class FeatureValue implements Serializable {
     @Id
     @Column(name = "feature_id")
     private String featureId;
+
     @Id
     @Column(name = "version_id")
     private String versionId;
@@ -33,6 +34,9 @@ public class FeatureValue implements Serializable {
     @Column(name = "value")
     private double value;
 
+    /**
+     * Default constructor Hibernate ORM. Do not use this constructor.
+     */
     public FeatureValue() {
 
     }
@@ -40,7 +44,7 @@ public class FeatureValue implements Serializable {
     /**
      * @param featureId The ID of this Feature type.
      * @param versionId The UUID of the version this value belongs to.
-     * @param value The value this feature has for this version.
+     * @param value     The value this feature has for this version.
      */
     public FeatureValue(String featureId, String versionId, double value) {
         this.featureId = featureId;
@@ -69,7 +73,7 @@ public class FeatureValue implements Serializable {
      *
      * @param featureId The ID of this Feature type.
      * @param versionId The UUID of the version this value belongs to.
-     * @param value The value this feature has for this version.
+     * @param value     The value this feature has for this version.
      * @return The FeatureValue object which was subject to the change.
      */
     public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value) {
@@ -80,12 +84,12 @@ public class FeatureValue implements Serializable {
     }
 
     /**
-     *  Set the feature value for a version. If a value already exists, it will be updated.
+     * Set the feature value for a version. If a value already exists, it will be updated.
      *
      * @param featureId The ID of this Feature type.
      * @param versionId The UUID of the version this value belongs to.
-     * @param value The value this feature has for this version.
-     * @param session The DB session to use.
+     * @param value     The value this feature has for this version.
+     * @param session   The DB session to use.
      * @return The FeatureValue object which was subject to the change.
      */
     public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value, Session session) {
@@ -119,7 +123,7 @@ public class FeatureValue implements Serializable {
     /**
      * @param featureId The ID of this Feature type.
      * @param versionId The UUID of the version this value belongs to.
-     * @param session The DB session to use.
+     * @param session   The DB session to use.
      * @return A FeatureValue Object if one was found, null if not.
      */
     public static FeatureValue retrieveFeatureValue(String featureId, String versionId, Session session) {

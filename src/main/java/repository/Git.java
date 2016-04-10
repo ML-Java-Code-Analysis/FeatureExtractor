@@ -29,38 +29,30 @@ import java.util.Map;
  */
 public class Git {
 
-    private FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
     private Repository repository;
 
     /**
      * Initialize git repository
-     * @args Repositorypath
-     * @return Nothing.
-     * @exception IOException On input error.
+     *
+     * @throws IOException If the repository is not found.
+     * @param path The Filepath to the repository root directory.
      * @see IOException
      */
-    public Git(String path){
+    public Git(String path) throws IOException {
+        String gitPath = path + "\\.git";
 
-        String repositoryPath = path;
-        String gitPath = repositoryPath + "\\.git";
-
+        FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
         repositoryBuilder.setMustExist(true);
         repositoryBuilder.setGitDir(new File(gitPath));
-        try {
-            repository = repositoryBuilder.build();
-        } catch (IOException e) {
-            // TODO Entscheidung Programmabbruch OK? Ja
-            // TODO Logging
-            e.printStackTrace();
-        }
     }
 
     /**
      * Searches for file in commit and returns the source-code
-     * @args path of the file, commit id (SHA string)
+     *
      * @return source code fo file
-     * @exception IOException On input error.
-     * @exception FileNotFoundException When file is not found in commit
+     * @throws IOException           On input error.
+     * @throws FileNotFoundException When file is not found in commit
+     * @args path of the file, commit id (SHA string)
      * @see IOException
      */
     public char[] getSourceCode(String path, String commitSHA) throws FileNotFoundException {
@@ -68,7 +60,7 @@ public class Git {
 
         Map<String, ObjectId> files = getFiles(commitSHA);
 
-        if ( !files.containsKey(path) )
+        if (!files.containsKey(path))
             throw new FileNotFoundException("file " + path + " not found in commit " + commitSHA);
 
         try {
@@ -89,9 +81,10 @@ public class Git {
 
     /**
      * List all files for commit
-     * @args commit id (SHA string)
+     *
      * @return hashmap(Path: FileId) of all files
-     * @exception InvalidObjectIdException If commit is not found
+     * @throws InvalidObjectIdException If commit is not found
+     * @args commit id (SHA string)
      * @exceotion IncorrectObjectTypeException ??
      * @exceotion CorruptObjectException ??
      * @exceotion MissingObjectException ??
@@ -105,7 +98,7 @@ public class Git {
         ObjectId commitId = null;
         try {
             commitId = ObjectId.fromString(commitSHA);
-        } catch ( InvalidObjectIdException e ) {
+        } catch (InvalidObjectIdException e) {
             // TODO Entscheidung Programmabbruch OK? Nein ???
             // TODO Logging
             e.printStackTrace();
@@ -143,6 +136,7 @@ public class Git {
 
     /**
      * Close Repository
+     *
      * @return Nothing
      */
     public void closeRepository() {

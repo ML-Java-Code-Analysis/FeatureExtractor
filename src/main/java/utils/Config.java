@@ -38,9 +38,9 @@ public class Config {
 
     /**
      * This method reads and parses command line arguments
+     *
      * @param args command line arguments.
-     * @return Nothing.
-     * @exception ParseException On input error.
+     * @throws ParseException On input error.
      * @see ParseException
      */
     public void parse(String[] args) {
@@ -50,11 +50,10 @@ public class Config {
 
         try {
             CommandLine line = parser.parse(options, args);
-            if ( line.hasOption("f") ) {
+            if (line.hasOption("f")) {
                 configFile = line.getOptionValue("f");
             }
-        }
-        catch(ParseException e) {
+        } catch (ParseException e) {
             // TODO Entscheidung Programmabbruch OK? Ja
             // TODO Logging
             System.err.println("Parsing failed. Reason: " + e.getMessage());
@@ -64,8 +63,9 @@ public class Config {
 
     /**
      * This method reads and parses the config file. Assigns the config values to the vars
+     *
      * @return Nothing.
-     * @exception IOException On input error.
+     * @throws IOException On input error.
      * @see IOException
      */
     public void readConfigFile() {
@@ -85,7 +85,8 @@ public class Config {
         }
     }
 
-    /** getters for config parameters
+    /**
+     * getters for config parameters
      */
     public String getConfigFile() {
         return configFile;
