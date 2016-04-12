@@ -50,12 +50,12 @@ public class Git {
      * Searches for file in commit and returns the source-code
      *
      * @return source code fo file
-     * @throws IOException           On input error.
-     * @throws FileNotFoundException When file is not found in commit
-     * @args path of the file, commit id (SHA string)
+     * @throws IOException On input error, eg. when a file is not found in commit
+     * @param path Filepath of the source file
+     * @param commitSHA The SHA-Hash of the commit
      * @see IOException
      */
-    public char[] getSourceCode(String path, String commitSHA) throws FileNotFoundException {
+    public char[] getSourceCode(String path, String commitSHA) throws IOException {
         char[] code = null;
 
         Map<String, ObjectId> files = getFiles(commitSHA);
@@ -63,81 +63,46 @@ public class Git {
         if (!files.containsKey(path))
             throw new FileNotFoundException("file " + path + " not found in commit " + commitSHA);
 
-        try {
-            ObjectId file = files.get(path);
-            ObjectLoader loader = repository.open(file);
-            InputStream in = loader.openStream();
-            String codeString = IOUtils.toString(in, "utf8");
-            code = codeString.toCharArray();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO Entscheidung Programmabbruch OK? Nein??
-            // TODO Logging
-        }
+        ObjectId file = files.get(path);
+        ObjectLoader loader = repository.open(file);
+        InputStream in = loader.openStream();
+        String codeString = IOUtils.toString(in, "utf8");
+        code = codeString.toCharArray();
 
         return code;
     }
 
     /**
-     * List all files for commit
-     *
-     * @return hashmap(Path: FileId) of all files
-     * @throws InvalidObjectIdException If commit is not found
-     * @args commit id (SHA string)
-     * @exceotion IncorrectObjectTypeException ??
-     * @exceotion CorruptObjectException ??
-     * @exceotion MissingObjectException ??
-     * @exceotion IOException if file could not be acccess during file scan
+     * @param commitSHA The SHA-Hash of the commit
+     * @return A Hashmap consisting of Filepaths mapped to Object-IDs
+     * @throws IOException If file could not be acccess during file scan
      */
-    private Map<String, ObjectId> getFiles(String commitSHA) {
+    private Map<String, ObjectId> getFiles(String commitSHA) throws IOException {
 
         Map<String, ObjectId> files = new HashMap<String, ObjectId>();
 
         RevWalk walk = new RevWalk(repository);
-        ObjectId commitId = null;
-        try {
-            commitId = ObjectId.fromString(commitSHA);
-        } catch (InvalidObjectIdException e) {
-            // TODO Entscheidung Programmabbruch OK? Nein ???
-            // TODO Logging
-            e.printStackTrace();
-        }
-        try {
-            RevCommit commit = walk.parseCommit(commitId);
+        ObjectId commitId =  ObjectId.fromString(commitSHA);
 
-            RevTree tree = commit.getTree();
-            TreeWalk treeWalk = new TreeWalk(repository);
-            treeWalk.addTree(tree);
-            treeWalk.setRecursive(false);
-            while (treeWalk.next()) {
-                if (treeWalk.isSubtree()) {
-                    treeWalk.enterSubtree();
-                } else {
-                    files.put(treeWalk.getPathString(), treeWalk.getObjectId(0));
-                }
+        RevCommit commit = walk.parseCommit(commitId);
+
+        RevTree tree = commit.getTree();
+        TreeWalk treeWalk = new TreeWalk(repository);
+        treeWalk.addTree(tree);
+        treeWalk.setRecursive(false);
+        while (treeWalk.next()) {
+            if (treeWalk.isSubtree()) {
+                treeWalk.enterSubtree();
+            } else {
+                files.put(treeWalk.getPathString(), treeWalk.getObjectId(0));
             }
-            walk.dispose();
-
         }
-        // TODO Entscheidung Programmabbruch OK? Nein ???
-        // TODO Logging
-        catch (IncorrectObjectTypeException e) {
-            e.printStackTrace();
-        } catch (CorruptObjectException e) {
-            e.printStackTrace();
-        } catch (MissingObjectException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        walk.dispose();
         return files;
     }
 
     /**
      * Close Repository
-     *
-     * @return Nothing
      */
     public void closeRepository() {
         repository.close();

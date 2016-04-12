@@ -6,12 +6,7 @@
 
 import features.Feature;
 import model.Version;
-
-import java.io.IOException;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -19,22 +14,37 @@ import org.reflections.Reflections;
 import repository.Git;
 import utils.Config;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FeatureExtractor {
     private static Logger logger;
+    private static Git git;
 
     public static void main(String[] args) {
         logger = Logger.getLogger("main");
         logger.log(Level.INFO, "Starting Feature Extractor.");
 
         logger.log(Level.INFO, "Reading Arguments.");
-        Config cfg = new Config();
-        cfg.parse(args);
+        Config cfg = null;
+        try {
+            cfg = new Config();
+            cfg.parse(args);
+        } catch (ParseException e) {
+            logger.log(Level.SEVERE, "Arguments could not be parsed.", e);
+            exit();
+        }
         logger.log(Level.INFO, "Reading Config Files.");
-        //cfg.readConfigFile();
+        try {
+            cfg.readConfigFile();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Config File could not be read.", e);
+            exit();
+        }
 
         // TODO Relevante Fileversionen aus DB holen
         List<Version> versions = new ArrayList<Version>();
@@ -42,15 +52,13 @@ public class FeatureExtractor {
         String repositoryPath = "C:\\Users\\ymeke\\Documents\\Studium\\BA\\Test_Repositories\\LED-Cube-Prototyper";
 
         // Repository intialisieren
-        Git git = null;
         try {
             git = new Git(repositoryPath);
         } catch (IOException e) {
-            e.printStackTrace();
-            //TODO: Exit program
-            return;
+            logger.log(Level.SEVERE, "Repository " + repositoryPath + " could not be read.", e);
+            exit();
         }
-        // TODO Für jede Fileversion
+
         List<Feature> features = getFeatures();
         for (Version version : versions) {
             String path = version.getFile().getPath();
@@ -58,7 +66,6 @@ public class FeatureExtractor {
 
             try {
                 char[] code = git.getSourceCode(path, commitId);
-                System.out.println(code);
                 CompilationUnit ast = parse(code);
                 for (Feature feature : features) {
                     double value = feature.extract(ast, code);
@@ -66,23 +73,21 @@ public class FeatureExtractor {
 
                     //FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
                 }
-
-            } catch (FileNotFoundException e) {
-                logger.log(Level.INFO, "File " + path + " was not found. Skipping this one.");
+            } catch (IOException e) {
+                String msg = "There was a problem with the file " + path +
+                        " from commit " + commitId + ". Skipping this one.";
+                logger.log(Level.WARNING, msg, e);
             }
-
-        }
-
-        //  - File/Source-Code aus git holen (repository-package)
-        try {
-            char[] code = git.getSourceCode("Controller.py", "31b6d396ba14fcb0e61650937f5d1754c10958bf");
-            System.out.println(code);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
 
         git.closeRepository();
+        logger.log(Level.INFO, "FeatureExtractor is done. See ya!");
+    }
 
+    private static void exit(){
+        logger.log(Level.WARNING, "Quitting program.");
+        git.closeRepository();
+        System.exit(0);
     }
 
     private static CompilationUnit parse(char[] code) {
@@ -96,17 +101,16 @@ public class FeatureExtractor {
     private static List<Feature> getFeatures() {
         List<Feature> features = new ArrayList<Feature>();
         for (Class<? extends Feature> featureClass : getFeatureClasses()) {
-            Feature feature = null;
             try {
-                feature = featureClass.newInstance();
+                Feature feature = featureClass.newInstance();
                 features.add(feature);
                 logger.log(Level.INFO, "Instantiated Feature " + featureClass.getName());
             } catch (InstantiationException e) {
-                String message = String.format("Could not instantiate Feature %s. Message%s",
+                String message = String.format("Could not instantiate Feature %s. Message: %s",
                         featureClass.getName(), e.getMessage());
                 logger.log(Level.WARNING, message);
             } catch (IllegalAccessException e) {
-                String message = String.format("Could not instantiate Feature %s. Message%s",
+                String message = String.format("Could not instantiate Feature %s. Message: %s",
                         featureClass.getName(), e.getMessage());
                 logger.log(Level.WARNING, message);
             }

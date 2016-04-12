@@ -14,15 +14,7 @@ import java.io.IOException;
 public class Config {
 
     //Config Options
-    private static final String DATABASESECTION = "DATABASE";
     private static final String REPOSITORYSECTION = "REPOSITORY";
-
-    private String databaseEngine;
-    private String databaseName;
-    private String databaseUser;
-    private String databaseUserPassword;
-    private String databaseHost;
-    private int databasePort;
 
     private String repositoryName;
 
@@ -43,77 +35,30 @@ public class Config {
      * @throws ParseException On input error.
      * @see ParseException
      */
-    public void parse(String[] args) {
+    public void parse(String[] args) throws ParseException {
 
         options.addOption(configFileOption);
         CommandLineParser parser = new GnuParser();
 
-        try {
-            CommandLine line = parser.parse(options, args);
-            if (line.hasOption("f")) {
-                configFile = line.getOptionValue("f");
-            }
-        } catch (ParseException e) {
-            // TODO Entscheidung Programmabbruch OK? Ja
-            // TODO Logging
-            System.err.println("Parsing failed. Reason: " + e.getMessage());
+        CommandLine line = parser.parse(options, args);
+        if (line.hasOption("f")) {
+            configFile = line.getOptionValue("f");
         }
-
     }
 
     /**
      * This method reads and parses the config file. Assigns the config values to the vars
      *
-     * @return Nothing.
      * @throws IOException On input error.
      * @see IOException
      */
-    public void readConfigFile() {
-        try {
-            Wini iniFileParser = new Wini(new File(configFile));
-            databaseEngine = iniFileParser.get(DATABASESECTION, "database_engine", String.class);
-            databaseName = iniFileParser.get(DATABASESECTION, "database_name", String.class);
-            databaseUser = iniFileParser.get(DATABASESECTION, "database_user", String.class);
-            databaseUserPassword = iniFileParser.get(DATABASESECTION, "database_user_password", String.class);
-            databaseHost = iniFileParser.get(DATABASESECTION, "database_host", String.class);
-            databasePort = iniFileParser.get(DATABASESECTION, "database_port", int.class);
-            repositoryName = iniFileParser.get(REPOSITORYSECTION, "name", String.class);
-        } catch (IOException e) {
-            // TODO Entscheidung Programmabbruch OK? Ja
-            // TODO Logging
-            System.err.println("Could not read Configfile. Reason: " + e.getMessage());
-        }
+    public void readConfigFile() throws IOException {
+        Wini iniFileParser = new Wini(new File(configFile));
+        repositoryName = iniFileParser.get(REPOSITORYSECTION, "name", String.class);
     }
 
-    /**
-     * getters for config parameters
-     */
     public String getConfigFile() {
         return configFile;
-    }
-
-    public String getDatabaseEngine() {
-        return databaseEngine;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
-    public String getDatabaseUser() {
-        return databaseUser;
-    }
-
-    public String getDatabaseUserPassword() {
-        return databaseUserPassword;
-    }
-
-    public String getDatabaseHost() {
-        return databaseHost;
-    }
-
-    public int getDatabasePort() {
-        return databasePort;
     }
 
     public String getRepositoryName() {
