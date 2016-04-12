@@ -3,9 +3,9 @@
  *
  * @author ymeke
  */
-package utils;
+package ba.ciel5.featureExtractor.utils;
 
-import model.FeatureValue;
+import ba.ciel5.featureExtractor.model.FeatureValue;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistry;

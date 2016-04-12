@@ -4,13 +4,13 @@
  * @author ymeke
  */
 
-package model;
+package ba.ciel5.featureExtractor.model;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import utils.HibernateUtil;
+import ba.ciel5.featureExtractor.utils.HibernateUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,7 +42,7 @@ public class FeatureValue implements Serializable {
     }
 
     /**
-     * @param featureId The ID of this Feature type.
+     * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param value     The value this feature has for this version.
      */
@@ -71,7 +71,7 @@ public class FeatureValue implements Serializable {
     /**
      * Set the feature value for a version. If a value already exists, it will be updated.
      *
-     * @param featureId The ID of this Feature type.
+     * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param value     The value this feature has for this version.
      * @return The FeatureValue object which was subject to the change.
@@ -86,7 +86,7 @@ public class FeatureValue implements Serializable {
     /**
      * Set the feature value for a version. If a value already exists, it will be updated.
      *
-     * @param featureId The ID of this Feature type.
+     * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param value     The value this feature has for this version.
      * @param session   The DB session to use.
@@ -109,7 +109,7 @@ public class FeatureValue implements Serializable {
     }
 
     /**
-     * @param featureId The ID of this Feature type.
+     * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @return A FeatureValue Object if one was found, null if not.
      */
@@ -121,7 +121,7 @@ public class FeatureValue implements Serializable {
     }
 
     /**
-     * @param featureId The ID of this Feature type.
+     * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param session   The DB session to use.
      * @return A FeatureValue Object if one was found, null if not.

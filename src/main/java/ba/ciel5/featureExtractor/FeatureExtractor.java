@@ -4,20 +4,19 @@
  * @author ymeke
  */
 
-import features.Feature;
-import model.Version;
+package ba.ciel5.featureExtractor;
+
+import ba.ciel5.featureExtractor.features.IFeatureGroup;
+import ba.ciel5.featureExtractor.model.Version;
+import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import org.apache.commons.cli.ParseException;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.reflections.Reflections;
-import repository.Git;
-import utils.Config;
+import ba.ciel5.featureExtractor.repository.Git;
+import ba.ciel5.featureExtractor.utils.Config;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +26,7 @@ public class FeatureExtractor {
 
     public static void main(String[] args) {
         logger = Logger.getLogger("main");
-        logger.log(Level.INFO, "Starting Feature Extractor.");
+        logger.log(Level.INFO, "Starting IFeature Extractor.");
 
         logger.log(Level.INFO, "Reading Arguments.");
         Config cfg = null;
@@ -59,19 +58,27 @@ public class FeatureExtractor {
             exit();
         }
 
-        List<Feature> features = getFeatures();
+        List<IFeatureGroup> featureGroups = getFeatureGroups();
         for (Version version : versions) {
             String path = version.getFile().getPath();
             String commitId = version.getCommitId();
 
             try {
                 char[] code = git.getSourceCode(path, commitId);
-                CompilationUnit ast = parse(code);
-                for (Feature feature : features) {
-                    double value = feature.extract(ast, code);
-                    String featureId = feature.getFeatureId();
+                CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
+                for (IFeatureGroup featureGroup : featureGroups) {
+                    Map<String, Double> features = featureGroup.extract(ast, code);
 
-                    //FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
+                    Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<String, Double> feature = it.next();
+                        String featureId = feature.getKey();
+                        Double value = feature.getValue();
+                        it.remove(); // avoids a ConcurrentModificationException
+
+                        // TODO: uncomment here to write feature to DB
+                        //FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
+                    }
                 }
             } catch (IOException e) {
                 String msg = "There was a problem with the file " + path +
@@ -81,7 +88,7 @@ public class FeatureExtractor {
         }
 
         git.closeRepository();
-        logger.log(Level.INFO, "FeatureExtractor is done. See ya!");
+        logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
     }
 
     private static void exit(){
@@ -90,37 +97,29 @@ public class FeatureExtractor {
         System.exit(0);
     }
 
-    private static CompilationUnit parse(char[] code) {
-        ASTParser parser = ASTParser.newParser(AST.JLS8);
-        parser.setKind(ASTParser.K_COMPILATION_UNIT);
-        parser.setSource(code);
-        parser.setResolveBindings(true);
-        return (CompilationUnit) parser.createAST(null);
-    }
-
-    private static List<Feature> getFeatures() {
-        List<Feature> features = new ArrayList<Feature>();
-        for (Class<? extends Feature> featureClass : getFeatureClasses()) {
+    private static List<IFeatureGroup> getFeatureGroups() {
+        List<IFeatureGroup> featureGroups = new ArrayList<IFeatureGroup>();
+        for (Class<? extends IFeatureGroup> featureGroupClass : getFeatureGroupClasses()) {
             try {
-                Feature feature = featureClass.newInstance();
-                features.add(feature);
-                logger.log(Level.INFO, "Instantiated Feature " + featureClass.getName());
+                IFeatureGroup featureGroup = featureGroupClass.newInstance();
+                featureGroups.add(featureGroup);
+                logger.log(Level.INFO, "Instantiated IFeatureGroup " + featureGroupClass.getName());
             } catch (InstantiationException e) {
-                String message = String.format("Could not instantiate Feature %s. Message: %s",
-                        featureClass.getName(), e.getMessage());
+                String message = String.format("Could not instantiate IFeatureGroup %s. Message: %s",
+                        featureGroupClass.getName(), e.getMessage());
                 logger.log(Level.WARNING, message);
             } catch (IllegalAccessException e) {
-                String message = String.format("Could not instantiate Feature %s. Message: %s",
-                        featureClass.getName(), e.getMessage());
+                String message = String.format("Could not instantiate IFeatureGroup %s. Message: %s",
+                        featureGroupClass.getName(), e.getMessage());
                 logger.log(Level.WARNING, message);
             }
         }
-        return features;
+        return featureGroups;
     }
 
-    private static Set<Class<? extends Feature>> getFeatureClasses() {
+    private static Set<Class<? extends IFeatureGroup>> getFeatureGroupClasses() {
         Reflections reflections = new Reflections("features");
-        return reflections.getSubTypesOf(Feature.class);
+        return reflections.getSubTypesOf(IFeatureGroup.class);
     }
 
 }

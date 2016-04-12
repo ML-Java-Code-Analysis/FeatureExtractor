@@ -1,9 +1,5 @@
-package repository;
+package ba.ciel5.featureExtractor.repository;
 
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.InvalidObjectIdException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
@@ -32,10 +28,10 @@ public class Git {
     private Repository repository;
 
     /**
-     * Initialize git repository
+     * Initialize git ba.ciel5.featureExtractor.repository
      *
-     * @throws IOException If the repository is not found.
-     * @param path The Filepath to the repository root directory.
+     * @throws IOException If the ba.ciel5.featureExtractor.repository is not found.
+     * @param path The Filepath to the ba.ciel5.featureExtractor.repository root directory.
      * @see IOException
      */
     public Git(String path) throws IOException {

@@ -4,8 +4,7 @@
  * @author ymeke
  */
 
-package model;
-
+package ba.ciel5.featureExtractor.model;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,26 +12,26 @@ import java.util.Collection;
 import java.util.Date;
 
 @Entity
-@Table(name = "file")
-public class File {
+@Table(name = "commit")
+public class Commit {
     @Id
     @Column(name = "id")
     private String id;
 
-    @Column(name = "precursor_file_id")
-    private String precursorFileId;
-
     @Column(name = "repository_id")
     private Integer repositoryId;
 
-    @Column(name = "path")
-    private String path;
+    @Column(name = "message")
+    private String message;
+
+    @Column(name = "author")
+    private String author;
 
     @Column(name = "timestamp")
     private Date timestamp;
 
-    @Column(name = "language")
-    private String language;
+    @Column(name = "complete")
+    private Boolean isComplete;
 
     @OneToMany
     private Collection<Version> versions = new ArrayList<Version>();
@@ -40,7 +39,7 @@ public class File {
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
      */
-    public File() {
+    Commit() {
 
     }
 
@@ -48,23 +47,27 @@ public class File {
         return id;
     }
 
-    public String getPrecursorFileId() {
-        return precursorFileId;
-    }
-
     public Integer getRepositoryId() {
         return repositoryId;
     }
 
-    public String getPath() {
-        return path;
+    public String getMessage() {
+        return message;
+    }
+
+    public String getAuthor() {
+        return author;
     }
 
     public Date getTimestamp() {
         return timestamp;
     }
 
-    public String getLanguage() {
-        return language;
+    public Boolean getComplete() {
+        return isComplete;
+    }
+
+    public Collection<Version> getVersions() {
+        return versions;
     }
 }

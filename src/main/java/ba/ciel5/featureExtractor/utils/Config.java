@@ -1,4 +1,4 @@
-package utils;
+package ba.ciel5.featureExtractor.utils;
 
 import org.apache.commons.cli.*;
 import org.ini4j.Wini;

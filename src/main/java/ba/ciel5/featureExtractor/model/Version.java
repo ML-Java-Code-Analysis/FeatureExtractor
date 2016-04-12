@@ -3,7 +3,7 @@
  *
  * @author ymeke
  */
-package model;
+package ba.ciel5.featureExtractor.model;
 
 import javax.persistence.*;
 
