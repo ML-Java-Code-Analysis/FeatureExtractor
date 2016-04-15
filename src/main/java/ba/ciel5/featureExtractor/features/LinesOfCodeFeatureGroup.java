@@ -13,7 +13,7 @@ import ba.ciel5.featureExtractor.utils.Average;
 import java.util.*;
 
 
-public class LinesOfCodeFeatureGroup implements IFeatureGroup{
+public class LinesOfCodeFeatureGroup implements IFeatureGroup {
 
     public Map<String, Double> extract(CompilationUnit ast, char[] code) {
         double physicalLinesCount = 0;
@@ -41,7 +41,7 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup{
             int start = comment.getStartPosition();
             int length = comment.getLength();
             if ( comment.isLineComment() == Boolean.TRUE ) {
-                for (int i = start; i < start + code.length; i++) {
+                for (int i = start; i < code.length; i++) {
                     commentString += code[i];
                     if ( code[i] == '\n' ) {
                         break;
@@ -64,9 +64,11 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup{
         }
 
         Collections.sort(lengths);
-        minLineLength = lengths.get(0);
-        maxLineLength = lengths.get(lengths.size() - 1);
-        medLineLength = Average.getMedianFromIntegers(lengths);
+        if ( lengths.size() > 0 ) {
+            minLineLength = lengths.get(0);
+            maxLineLength = lengths.get(lengths.size() - 1);
+            medLineLength = Average.getMedianFromIntegers(lengths);
+        }
 
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("PLOC", physicalLinesCount);

@@ -76,7 +76,8 @@ public class HibernateUtil {
             result = query.list();
             tx.commit();
         } catch (HibernateException e) {
-            if (tx!=null) tx.rollback();
+            if (tx!=null)
+                tx.rollback();
             throw new HibernateError(e.getMessage());
         } finally {
             session.close();

@@ -92,7 +92,7 @@ public class FeatureValue implements Serializable {
      * @param session   The DB session to use.
      * @return The FeatureValue object which was subject to the change.
      */
-    public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value, Session session) {
+    public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value, Session session) throws HibernateException {
         FeatureValue featureValue = null;
         Transaction transaction = null;
         try {
@@ -103,7 +103,8 @@ public class FeatureValue implements Serializable {
         } catch (HibernateException e) {
             if (transaction != null)
                 transaction.rollback();
-            e.printStackTrace();
+            session.close();
+            throw new HibernateException(e.getMessage());
         }
         return featureValue;
     }

@@ -7,6 +7,7 @@
 package ba.ciel5.featureExtractor;
 
 import ba.ciel5.featureExtractor.features.IFeatureGroup;
+import ba.ciel5.featureExtractor.model.FeatureValue;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.model.Repository;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
@@ -109,7 +110,11 @@ public class FeatureExtractor {
                         it.remove(); // avoids a ConcurrentModificationException
 
                         // TODO: uncomment here to write feature to DB
-                        //FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
+                        try {
+                            FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
+                        } catch (HibernateError e) {
+                            logger.log(Level.SEVERE, "Could not add Feature: " + featureId + " with value: " + value, e);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -132,7 +137,8 @@ public class FeatureExtractor {
 
     private static List<IFeatureGroup> getFeatureGroups() {
         List<IFeatureGroup> featureGroups = new ArrayList<IFeatureGroup>();
-        for (Class<? extends IFeatureGroup> featureGroupClass : getFeatureGroupClasses()) {
+        Set<Class<? extends IFeatureGroup>> featureGroupClasses = getFeatureGroupClasses();
+        for (Class<? extends IFeatureGroup> featureGroupClass : featureGroupClasses) {
             try {
                 IFeatureGroup featureGroup = featureGroupClass.newInstance();
                 featureGroups.add(featureGroup);
@@ -151,7 +157,7 @@ public class FeatureExtractor {
     }
 
     private static Set<Class<? extends IFeatureGroup>> getFeatureGroupClasses() {
-        Reflections reflections = new Reflections("features");
+        Reflections reflections = new Reflections("ba.ciel5.featureExtractor.features");
         return reflections.getSubTypesOf(IFeatureGroup.class);
     }
 
