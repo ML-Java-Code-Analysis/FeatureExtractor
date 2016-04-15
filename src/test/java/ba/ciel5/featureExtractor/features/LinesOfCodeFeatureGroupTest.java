@@ -99,12 +99,12 @@ public class LinesOfCodeFeatureGroupTest {
         Map<String, Double> result = feature.extract(ast, code);
 
         assertEquals(76.0, result.get("PLOC"), 0.0);
-        assertEquals(50.0, result.get("SLOC"), 0.0);
+        assertEquals(51.0, result.get("SLOC"), 0.0);
         assertEquals(13.0, result.get("BLOC"), 0.0);
         assertEquals(13.0, result.get("CLOC"), 0.0);
         assertEquals(0.0, result.get("MINLINE"), 0.0);
         assertEquals(65.0, result.get("MAXLINE"), 0.0);
-        //assertEquals(expected, result.get("MEDLINE"), 0.001);
+        assertEquals(36.0, result.get("MEDLINE"), 0.0);
     }
 
 }

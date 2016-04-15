@@ -63,14 +63,14 @@ public class HibernateUtil {
         return complexQuery(queryString, new ArrayList());
     }
 
-    public static <T> List<T> complexQuery(String queryString, List<Pair<String,String>> parameters) throws HibernateException {
+    public static <T> List<T> complexQuery(String queryString, List<Pair<String,T>> parameters) throws HibernateException {
         Session session = openSession();
         Transaction tx = null;
         List<T> result = new ArrayList<T>();
         try{
             tx = session.beginTransaction();
             Query query = session.createQuery(queryString);
-            for ( Pair<String,String> parameter : parameters) {
+            for ( Pair<String,T> parameter : parameters) {
                 query.setParameter(parameter.getKey(), parameter.getValue());
             }
             result = query.list();

@@ -40,16 +40,27 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup{
             String commentString = "";
             int start = comment.getStartPosition();
             int length = comment.getLength();
-            for (int i = start; i < start + length; i++) {
-                commentString += code[i];
+            if ( comment.isLineComment() == Boolean.TRUE ) {
+                for (int i = start; i < start + code.length; i++) {
+                    commentString += code[i];
+                    if ( code[i] == '\n' ) {
+                        break;
+                    }
+                }
+            }
+            else {
+                for (int i = start; i < start + length; i++) {
+                    commentString += code[i];
+                }
             }
             commentLinesCount += countLines(commentString);
             commentLessCodeString = commentLessCodeString.replace(commentString, "");
         }
 
-        for (String line: codeString.split("\n")) {
-            if (line.trim().length() != 0)
+        for (String line: commentLessCodeString.split("\n")) {
+            if (line.trim().length() != 0) {
                 sourceLinesCount++;
+            }
         }
 
         Collections.sort(lengths);

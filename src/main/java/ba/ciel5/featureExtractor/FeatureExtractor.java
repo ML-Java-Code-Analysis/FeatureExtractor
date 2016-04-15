@@ -7,7 +7,6 @@
 package ba.ciel5.featureExtractor;
 
 import ba.ciel5.featureExtractor.features.IFeatureGroup;
-import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.model.Repository;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
@@ -55,22 +54,22 @@ public class FeatureExtractor {
         try {
             repositories = HibernateUtil.complexQuery("FROM Repository WHERE name = :name", new ArrayList(Arrays.asList(new Pair("name", cfg.getRepositoryName()))));
         } catch (HibernateError e) {
-            logger.log(Level.SEVERE, "DB Query failed",e);
+            logger.log(Level.SEVERE, "DB Query failed", e);
         }
-        if ( repositories.size() != 1 ) {
+        if (repositories.size() != 1) {
             logger.log(Level.SEVERE, "No repository found or more than one found with name " + cfg.getRepositoryName());
             exit();
         }
         Repository repository = repositories.get(0);
         String repositoryPath = repository.getUrl();
 
-        // TODO Get all versions
+        // Get all versions (except deleted ones)
         List<Version> versions = null;
-
-//        for ( Commit commit : repository.getCommits()) {
-//            versions.addAll(commit.getVersions());
-//        }
-
+        try {
+            versions = HibernateUtil.complexQuery("SELECT version FROM Commit as c INNER JOIN c.versions AS version WHERE c.repositoryId = :repositoryId AND version.deleted = FALSE", new ArrayList(Arrays.asList(new Pair("repositoryId", Integer.parseInt(repository.getId())))));
+        } catch (HibernateError e) {
+            logger.log(Level.SEVERE, "DB Query failed", e);
+        }
 
         // Repository intialisieren
         try {
@@ -81,9 +80,20 @@ public class FeatureExtractor {
         }
 
         List<IFeatureGroup> featureGroups = getFeatureGroups();
+
+        int log_interval = 1, i = 1;
+        if (versions.size() > 1000)
+            log_interval = 100;
+
         for (Version version : versions) {
             String path = version.getPath();
             String commitId = version.getCommitId();
+
+            if (i % log_interval == 0) {
+                double prc = (double) i / versions.size() * 100.0;
+                logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - processed versions: " + i);
+            }
+            i++;
 
             try {
                 char[] code = git.getSourceCode(path, commitId);
@@ -111,9 +121,10 @@ public class FeatureExtractor {
 
         git.closeRepository();
         logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
+        exit();
     }
 
-    private static void exit(){
+    private static void exit() {
         logger.log(Level.WARNING, "Quitting program.");
         git.closeRepository();
         System.exit(0);
