@@ -40,6 +40,7 @@ public class Git {
         FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
         repositoryBuilder.setMustExist(true);
         repositoryBuilder.setGitDir(new File(gitPath));
+        repository = repositoryBuilder.build();
     }
 
     /**

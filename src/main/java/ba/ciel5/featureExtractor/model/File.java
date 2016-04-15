@@ -19,17 +19,8 @@ public class File {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "precursor_file_id")
-    private String precursorFileId;
-
     @Column(name = "repository_id")
     private Integer repositoryId;
-
-    @Column(name = "path")
-    private String path;
-
-    @Column(name = "timestamp")
-    private Date timestamp;
 
     @Column(name = "language")
     private String language;
@@ -48,20 +39,8 @@ public class File {
         return id;
     }
 
-    public String getPrecursorFileId() {
-        return precursorFileId;
-    }
-
     public Integer getRepositoryId() {
         return repositoryId;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public Date getTimestamp() {
-        return timestamp;
     }
 
     public String getLanguage() {

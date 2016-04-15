@@ -27,6 +27,9 @@ public class Version {
     @ManyToOne
     private Commit commit;
 
+    @Column(name = "path")
+    private String path;
+
     @Column(name = "lines_added")
     private Integer linesAdded;
 
@@ -35,6 +38,11 @@ public class Version {
 
     @Column(name = "file_size")
     private Integer fileSize;
+
+    @Column(name = "deleted")
+    private Boolean deleted;
+
+
 
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
@@ -73,5 +81,13 @@ public class Version {
 
     public Integer getFileSize() {
         return fileSize;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
     }
 }

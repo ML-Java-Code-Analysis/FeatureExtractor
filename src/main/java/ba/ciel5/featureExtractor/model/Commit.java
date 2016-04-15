@@ -30,6 +30,24 @@ public class Commit {
     @Column(name = "timestamp")
     private Date timestamp;
 
+    @Column(name = "added_files_count")
+    private Integer addedFilesCount;
+
+    @Column(name = "deleted_files_count")
+    private Integer deletedFilesCount;
+
+    @Column(name = "changed_files_count")
+    private Integer changedFilesCount;
+
+    @Column(name = "renamed_files_count")
+    private Integer renamedFilesCount;
+
+    @Column(name = "project_size")
+    private Integer projectSize;
+
+    @Column(name = "project_file_count")
+    private Integer projectFileCount;
+
     @Column(name = "complete")
     private Boolean isComplete;
 
@@ -65,6 +83,30 @@ public class Commit {
 
     public Boolean getComplete() {
         return isComplete;
+    }
+
+    public Integer getAddedFilesCount() {
+        return addedFilesCount;
+    }
+
+    public Integer getDeletedFilesCount() {
+        return deletedFilesCount;
+    }
+
+    public Integer getChangedFilesCount() {
+        return changedFilesCount;
+    }
+
+    public Integer getRenamedFilesCount() {
+        return renamedFilesCount;
+    }
+
+    public Integer getProjectSize() {
+        return projectSize;
+    }
+
+    public Integer getProjectFileCount() {
+        return projectFileCount;
     }
 
     public Collection<Version> getVersions() {

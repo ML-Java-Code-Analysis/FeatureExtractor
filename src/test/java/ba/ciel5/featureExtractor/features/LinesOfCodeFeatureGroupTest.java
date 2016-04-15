@@ -1,12 +1,9 @@
 package ba.ciel5.featureExtractor.features;
 
-import ba.ciel5.featureExtractor.FeatureExtractor;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
-import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import static org.junit.Assert.assertEquals;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
