@@ -19,13 +19,17 @@ public class File {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "repository_id")
+    @Column(name = "repository_id", nullable=false)
     private Integer repositoryId;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="repository_id",referencedColumnName="id", insertable=false, updatable=false)
+    private Repository repository;
 
     @Column(name = "language")
     private String language;
 
-    @OneToMany
+    @OneToMany(mappedBy = "file", fetch=FetchType.LAZY)
     private Collection<Version> versions = new ArrayList<Version>();
 
     /**
@@ -43,7 +47,15 @@ public class File {
         return repositoryId;
     }
 
+    public Repository getRepository() {
+        return repository;
+    }
+
     public String getLanguage() {
         return language;
+    }
+
+    public Collection<Version> getVersions() {
+        return versions;
     }
 }

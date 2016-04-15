@@ -5,12 +5,17 @@
  */
 package ba.ciel5.featureExtractor.utils;
 
-import ba.ciel5.featureExtractor.model.FeatureValue;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import ba.ciel5.featureExtractor.model.*;
+import ba.ciel5.featureExtractor.model.Version;
+import javafx.util.Pair;
+import org.hibernate.*;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -28,6 +33,10 @@ public class HibernateUtil {
         Configuration configuration = new Configuration();
         configuration.configure();
         configuration.addAnnotatedClass(FeatureValue.class);
+        configuration.addAnnotatedClass(Repository.class);
+        configuration.addAnnotatedClass(Commit.class);
+        configuration.addAnnotatedClass(File.class);
+        configuration.addAnnotatedClass(Version.class);
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
     }
@@ -48,5 +57,30 @@ public class HibernateUtil {
      */
     public static Session openSession() {
         return sessionFactory.openSession();
+    }
+
+    public static <T> List<T> simpleQuery(String queryString) throws HibernateException {
+        return complexQuery(queryString, new ArrayList());
+    }
+
+    public static <T> List<T> complexQuery(String queryString, List<Pair<String,String>> parameters) throws HibernateException {
+        Session session = openSession();
+        Transaction tx = null;
+        List<T> result = new ArrayList<T>();
+        try{
+            tx = session.beginTransaction();
+            Query query = session.createQuery(queryString);
+            for ( Pair<String,String> parameter : parameters) {
+                query.setParameter(parameter.getKey(), parameter.getValue());
+            }
+            result = query.list();
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx!=null) tx.rollback();
+            throw new HibernateError(e.getMessage());
+        } finally {
+            session.close();
+        }
+        return result;
     }
 }

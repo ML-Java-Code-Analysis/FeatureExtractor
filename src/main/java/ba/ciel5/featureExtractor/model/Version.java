@@ -15,16 +15,18 @@ public class Version {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "file_id")
+    @Column(name = "file_id", nullable=false)
     private String fileId;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="file_id",referencedColumnName="id", insertable=false, updatable=false)
     private File file;
 
-    @Column(name = "commit_id")
+    @Column(name = "commit_id", nullable=false)
     private String commitId;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="commit_id",referencedColumnName="id", insertable=false, updatable=false)
     private Commit commit;
 
     @Column(name = "path")

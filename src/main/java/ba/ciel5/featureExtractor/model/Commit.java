@@ -18,8 +18,12 @@ public class Commit {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "repository_id")
+    @Column(name = "repository_id", nullable=false)
     private Integer repositoryId;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="repository_id",referencedColumnName="id", insertable=false, updatable=false)
+    private Repository repository;
 
     @Column(name = "message")
     private String message;
@@ -51,7 +55,7 @@ public class Commit {
     @Column(name = "complete")
     private Boolean isComplete;
 
-    @OneToMany
+    @OneToMany(mappedBy = "commit", fetch=FetchType.LAZY)
     private Collection<Version> versions = new ArrayList<Version>();
 
     /**
@@ -67,6 +71,10 @@ public class Commit {
 
     public Integer getRepositoryId() {
         return repositoryId;
+    }
+
+    public Repository getRepository() {
+        return repository;
     }
 
     public String getMessage() {

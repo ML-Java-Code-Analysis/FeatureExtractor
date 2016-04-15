@@ -7,10 +7,15 @@
 package ba.ciel5.featureExtractor;
 
 import ba.ciel5.featureExtractor.features.IFeatureGroup;
+import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
+import ba.ciel5.featureExtractor.model.Repository;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
+import ba.ciel5.featureExtractor.utils.HibernateUtil;
+import javafx.util.Pair;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.hibernate.HibernateError;
 import org.reflections.Reflections;
 import ba.ciel5.featureExtractor.repository.Git;
 import ba.ciel5.featureExtractor.utils.Config;
@@ -45,10 +50,27 @@ public class FeatureExtractor {
             exit();
         }
 
-        // TODO Relevante Fileversionen aus DB holen
-        List<Version> versions = new ArrayList<Version>();
-        // TODO Repository Path aus DB holen
-        String repositoryPath = "C:\\Users\\ymeke\\Documents\\Studium\\BA\\Test_Repositories\\LED-Cube-Prototyper";
+        // Get Repository from DB
+        List<Repository> repositories = null;
+        try {
+            repositories = HibernateUtil.complexQuery("FROM Repository WHERE name = :name", new ArrayList(Arrays.asList(new Pair("name", cfg.getRepositoryName()))));
+        } catch (HibernateError e) {
+            logger.log(Level.SEVERE, "DB Query failed",e);
+        }
+        if ( repositories.size() != 1 ) {
+            logger.log(Level.SEVERE, "No repository found or more than one found with name " + cfg.getRepositoryName());
+            exit();
+        }
+        Repository repository = repositories.get(0);
+        String repositoryPath = repository.getUrl();
+
+        // TODO Get all versions
+        List<Version> versions = null;
+
+//        for ( Commit commit : repository.getCommits()) {
+//            versions.addAll(commit.getVersions());
+//        }
+
 
         // Repository intialisieren
         try {
@@ -60,7 +82,7 @@ public class FeatureExtractor {
 
         List<IFeatureGroup> featureGroups = getFeatureGroups();
         for (Version version : versions) {
-            String path = version.getFile().getPath();
+            String path = version.getPath();
             String commitId = version.getCommitId();
 
             try {
