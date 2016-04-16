@@ -69,6 +69,8 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup {
             maxLineLength = lengths.get(lengths.size() - 1);
             medLineLength = Average.getMedianFromIntegers(lengths);
         }
+        else
+            minLineLength=0;
 
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("PLOC", physicalLinesCount);
