@@ -23,7 +23,10 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
         //if we have more than just one class in a file we save the features in a pair list for every class
         List<Integer> weightedMethodsPerClass = new ArrayList<Integer>();
-        List<Integer> depthOfInheritanceTree = new ArrayList<Integer>();
+
+        //TODO this shit doesn't work like this. full source code scan needed
+        //List<Integer> depthOfInheritanceTree = new ArrayList<Integer>();
+
         List<Integer> couplingBetweenObjects = new ArrayList<Integer>();
         List<Integer> responseForClass = new ArrayList<Integer>();
         List<Integer> lackOfCohesionInMethods = new ArrayList<Integer>();
@@ -99,7 +102,8 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
 
             weightedMethodsPerClass.add(javaClass.getMethods().length);
-            depthOfInheritanceTree.add(getDepthofInheritance(javaClass.getClass()));
+            //TODO DIT feature
+            //depthOfInheritanceTree.add(getDepthofInheritance(javaClass.getClass()));
             couplingBetweenObjects.add(externalMethodCalls);
             responseForClass.add(externalMethodCalls + classMethods.size());
             lackOfCohesionInMethods.add(numberOfMethodsWithoutClassVariableUsage);
@@ -109,8 +113,9 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
         double weightedMethodsPerClassPerFile = ListUtil.sum(weightedMethodsPerClass);
         double depthOfInheritanceTreePerFile = 0;
-        if (depthOfInheritanceTree.size() > 0)
-            depthOfInheritanceTreePerFile = ListUtil.sum(depthOfInheritanceTree) / depthOfInheritanceTree.size();
+        //TODO DIT feature
+        //if (depthOfInheritanceTree.size() > 0)
+            //depthOfInheritanceTreePerFile = ListUtil.sum(depthOfInheritanceTree) / depthOfInheritanceTree.size();
         double couplingBetweenObjectsPerFile = ListUtil.sum(couplingBetweenObjects);
         double responseForClassPerFile = ListUtil.sum(responseForClass);
         double lackOfCohesionInMethodsPerFile = ListUtil.sum(lackOfCohesionInMethods);
@@ -130,6 +135,7 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
     /**
      * Helper function to get depth of class inheritance to object class
+     * TODO shit doesn't work...
      * @param javaClass class to get inheritance for
      * @return depth of inheritance as number
      */
