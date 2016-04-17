@@ -124,7 +124,8 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("WMC", weightedMethodsPerClassPerFile);
-        map.put("DIT", depthOfInheritanceTreePerFile);
+        //TODO DIT feature
+        //map.put("DIT", depthOfInheritanceTreePerFile);
         map.put("CBO", couplingBetweenObjectsPerFile);
         map.put("RFC", responseForClassPerFile);
         map.put("LCOM", lackOfCohesionInMethodsPerFile);

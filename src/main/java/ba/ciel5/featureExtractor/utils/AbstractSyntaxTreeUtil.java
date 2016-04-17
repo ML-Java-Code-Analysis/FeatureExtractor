@@ -107,6 +107,26 @@ public class AbstractSyntaxTreeUtil {
     }
 
     /**
+     * Get all variable declaration fragements
+     * @param method to search
+     * @return a list of all statements
+     */
+    public static List<VariableDeclarationFragment> getVariableDeclarationFragments(MethodDeclaration method) {
+        List<VariableDeclarationFragment> variableDeclarationFragements;
+
+        Block body = method.getBody();
+        //Seems to be an abstract method without body
+        if (body == null)
+            return new ArrayList<VariableDeclarationFragment>();
+        List<ASTNode> statements = body.statements();
+
+        //filter ASTNode for FieldAccess (class variable access)
+        variableDeclarationFragements = filterASTTreeForNodeType(statements, 59);
+
+        return variableDeclarationFragements;
+    }
+
+    /**
      * Helper function to filter an AST node for a specific ast type (for example a method / a variable / ...)
      * @param statements ast nodes ( code statements )
      * @param nodeTypeNumber ast code number (for example 22 for all class variable access)

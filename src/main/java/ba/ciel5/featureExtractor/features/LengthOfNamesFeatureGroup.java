@@ -5,84 +5,98 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.Average;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class LengthOfNamesFeatureGroup implements IFeatureGroup {
 
     public Map<String, Double> extract(CompilationUnit ast, char[] code) {
 
-        final List<Integer> variableLengths = new ArrayList<Integer>();
+        List<List<Integer>> variableLengths = new ArrayList<List<Integer>>();
+        List<List<Integer>> methodLengths = new ArrayList<List<Integer>>();
+        List<Integer> classLengths = new ArrayList<Integer>();
+
+
+
+        List<TypeDeclaration> javaClasses = null;
+        try {
+            javaClasses = AbstractSyntaxTreeUtil.getClasses(ast);
+        } catch (ClassCastException e) {
+            String errorMessage = "Could not parse Source-Code with AST";
+            throw new ClassCastException(errorMessage);
+        }
+
+
+        //the big loop --> for every java class
+        for (TypeDeclaration javaClass : javaClasses) {
+            List<Integer> variableLengthsPerClass = new ArrayList<Integer>();
+            List<Integer> methodLengthsPerClass;
+
+
+            List<FieldDeclaration> classVariables = AbstractSyntaxTreeUtil.getClassVariables(javaClass);
+
+
+            for (FieldDeclaration classVariable : classVariables) {
+                List<VariableDeclarationFragment> variableFragments = classVariable.fragments();
+                variableLengthsPerClass.add(variableFragments.get(0).getName().getLength());
+            }
+
+            List<MethodDeclaration> classMethods = AbstractSyntaxTreeUtil.getClassMethods(javaClass);
+
+            // Add all method name lengths to the methodlengts array
+            methodLengthsPerClass = classMethods
+                                    .stream()
+                                    .map(method -> method.getName().getLength())
+                                    .collect(Collectors.toList());
+
+            // For every mehtod
+            // Add all
+            classMethods.forEach(method -> variableLengthsPerClass.addAll(AbstractSyntaxTreeUtil.getVariableDeclarationFragments(method)
+                                                                                    .stream()
+                                                                                    .map(vars -> vars.getName().getLength())
+                                                                                    .collect(Collectors.toList())));
+
+            variableLengths.add(variableLengthsPerClass);
+
+            methodLengths.add(methodLengthsPerClass);
+            classLengths.add(javaClass.getName().getLength());
+        }
+
         double minVaribaleNameLength = Integer.MAX_VALUE;
         double maxVaribaleNameLength = 0;
         double medVaribaleNameLength = 0;
 
-        final List<Integer> methodLengths = new ArrayList<Integer>();
         double minMethodNameLength = Integer.MAX_VALUE;
         double maxMethodNameLength = 0;
         double medMethodNameLength = 0;
 
-        final List<Integer> classLengths = new ArrayList<Integer>();
         double minclassNameLength = Integer.MAX_VALUE;
         double maxclassNameLength = 0;
         double medclassNameLength = 0;
 
-
-        for (Object type : ast.types()) {
-            try {
-                TypeDeclaration typeNode = (TypeDeclaration) type;
-                classLengths.add(typeNode.getName().getLength());
-
-                //get class varibale names
-                for (FieldDeclaration field : typeNode.getFields()) {
-
-                    List<VariableDeclarationFragment> ff = field.fragments();
-                    variableLengths.add(ff.get(0).getName().getLength());
-
-                }
-
-                //get class method names
-                for (MethodDeclaration method : typeNode.getMethods()) {
-                    methodLengths.add(method.getName().getLength());
-
-                    ASTVisitor visitor = new ASTVisitor() {
-                        @Override
-                        public void preVisit(ASTNode node) {
-                            //Search for simple names
-                            if ( node.getNodeType() == 42) {
-                                //Varibale Declatrion statement
-                                if ( node.getParent().getNodeType() == 59 ) {
-                                    variableLengths.add(node.getLength());
-                                }
-                            }
-                            super.preVisit(node);
-                        }
-                    };
-                    method.accept(visitor);
-                }
-            } catch (ClassCastException e) {
-                e.printStackTrace();
-            }
-        }
-
-        Collections.sort(variableLengths);
-        Collections.sort(methodLengths);
-
-        if ( variableLengths.size() > 0 ) {
-            minVaribaleNameLength = variableLengths.get(0);
-            maxVaribaleNameLength = variableLengths.get(variableLengths.size() - 1);
-            medVaribaleNameLength = Average.getMedianFromIntegers(variableLengths);
+        List<Integer> allVariableLengths = new ArrayList<Integer>();
+        variableLengths.forEach(vars -> allVariableLengths.addAll(vars));
+        if ( allVariableLengths.size() > 0 ) {
+            Collections.sort(allVariableLengths);
+            minVaribaleNameLength = allVariableLengths.get(0);
+            maxVaribaleNameLength = allVariableLengths.get(allVariableLengths.size() - 1);
+            medVaribaleNameLength = Average.getMedianFromIntegers(allVariableLengths);
         }
         else
             minVaribaleNameLength=0;
 
-        if ( methodLengths.size() > 0 ) {
-            minMethodNameLength = methodLengths.get(0);
-            maxMethodNameLength = methodLengths.get(methodLengths.size() - 1);
-            medMethodNameLength = Average.getMedianFromIntegers(methodLengths);
+        List<Integer> allMethodLengths = new ArrayList<Integer>();
+        methodLengths.forEach(methods -> allMethodLengths.addAll(methods));
+        if ( allMethodLengths.size() > 0 ) {
+            Collections.sort(allMethodLengths);
+            minMethodNameLength = allMethodLengths.get(0);
+            maxMethodNameLength = allMethodLengths.get(allMethodLengths.size() - 1);
+            medMethodNameLength = Average.getMedianFromIntegers(allMethodLengths);
         }
         else
             minMethodNameLength=0;
