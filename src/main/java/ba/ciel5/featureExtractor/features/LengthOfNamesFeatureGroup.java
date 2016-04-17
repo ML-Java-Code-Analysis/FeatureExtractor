@@ -1,3 +1,8 @@
+/**
+ * Created on 15.04.2016.
+ * Feature group with different name lengths in code
+ * @author tobias.meier
+ */
 package ba.ciel5.featureExtractor.features;
 
 import ba.ciel5.featureExtractor.utils.Average;
@@ -5,11 +10,7 @@ import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
 
-/**
- * Created on 15.04.2016.
- *
- * @author tobias.meier
- */
+
 public class LengthOfNamesFeatureGroup implements IFeatureGroup {
 
     public Map<String, Double> extract(CompilationUnit ast, char[] code) {

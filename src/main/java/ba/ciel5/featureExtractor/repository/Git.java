@@ -20,7 +20,9 @@ import java.util.Map;
 
 /**
  * Created on 05.04.2016.
- *
+ * Handles git repository
+ * - initialize
+ * - read source code of files
  * @author tobias.meier
  */
 public class Git {
@@ -99,7 +101,7 @@ public class Git {
     }
 
     /**
-     * Close Repository
+     * Close repository
      */
     public void closeRepository() {
         repository.close();

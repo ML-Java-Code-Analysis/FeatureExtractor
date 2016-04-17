@@ -4,11 +4,16 @@ import java.util.List;
 
 /**
  * Created on 12.04.2016.
- *
+ * math help function
  * @author ymeke
  */
 public class Average {
 
+    /**
+     * calculate median from a list
+     * @param list integers
+     * @return median
+     */
     public static double getMedianFromIntegers(List<Integer> list) {
         int middle = list.size() / 2;
         if (list.size() % 2 == 0)
@@ -17,6 +22,11 @@ public class Average {
             return list.get(middle);
     }
 
+    /**
+     * calculate median from a list
+     * @param list doubles
+     * @return median
+     */
     public static double getMedianFromDoubles(List<Double> list) {
         int middle = list.size() / 2;
         if (list.size() % 2 == 0)

@@ -8,7 +8,7 @@ import java.io.IOException;
 
 /**
  * Created on 05.04.2016.
- *
+ * Reads config file for FeatureExtractor
  * @author tobias.meier
  */
 public class Config {

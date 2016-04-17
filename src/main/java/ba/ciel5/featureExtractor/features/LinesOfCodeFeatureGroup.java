@@ -1,6 +1,6 @@
 /**
  * Created on 12.04.2016.
- *
+ * Feature group of line of code
  * @author ymeke
  */
 
@@ -26,29 +26,28 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup {
 
         List<Integer> lengths = new ArrayList<Integer>();
         String codeString = new String(code);
-        for (String line: codeString.split("\n")) {
+        for (String line : codeString.split("\n")) {
             physicalLinesCount++;
-            if(line.trim().length() == 0)
+            if (line.trim().length() == 0)
                 blankLinesCount++;
 
             lengths.add(line.length());
         }
 
         String commentLessCodeString = codeString;
-        for (Object commentObj: ast.getCommentList()) {
+        for (Object commentObj : ast.getCommentList()) {
             Comment comment = (Comment) commentObj;
             String commentString = "";
             int start = comment.getStartPosition();
             int length = comment.getLength();
-            if ( comment.isLineComment() == Boolean.TRUE ) {
+            if (comment.isLineComment() == Boolean.TRUE) {
                 for (int i = start; i < code.length; i++) {
                     commentString += code[i];
-                    if ( code[i] == '\n' ) {
+                    if (code[i] == '\n') {
                         break;
                     }
                 }
-            }
-            else {
+            } else {
                 for (int i = start; i < start + length; i++) {
                     commentString += code[i];
                 }
@@ -57,20 +56,19 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup {
             commentLessCodeString = commentLessCodeString.replace(commentString, "");
         }
 
-        for (String line: commentLessCodeString.split("\n")) {
+        for (String line : commentLessCodeString.split("\n")) {
             if (line.trim().length() != 0) {
                 sourceLinesCount++;
             }
         }
 
         Collections.sort(lengths);
-        if ( lengths.size() > 0 ) {
+        if (lengths.size() > 0) {
             minLineLength = lengths.get(0);
             maxLineLength = lengths.get(lengths.size() - 1);
             medLineLength = Average.getMedianFromIntegers(lengths);
-        }
-        else
-            minLineLength=0;
+        } else
+            minLineLength = 0;
 
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("PLOC", physicalLinesCount);
@@ -83,7 +81,7 @@ public class LinesOfCodeFeatureGroup implements IFeatureGroup {
         return map;
     }
 
-    private static int countLines(String string){
+    private static int countLines(String string) {
         return string.split("\n").length;
     }
 }

@@ -59,24 +59,40 @@ public class HibernateUtil {
         return sessionFactory.openSession();
     }
 
+    /**
+     * take a string and execute a simple query (no filters)
+     * @param queryString for example FROM Version (select all datasets from table version)
+     * @param <T>
+     * @return result set
+     * @throws HibernateException
+     */
     public static <T> List<T> simpleQuery(String queryString) throws HibernateException {
         return complexQuery(queryString, new ArrayList());
     }
 
-    public static <T> List<T> complexQuery(String queryString, List<Pair<String,T>> parameters) throws HibernateException {
+    /**
+     * take a string and execure a simple query with filters
+     * @param queryString for example FROM Version WHERE name = :name
+     * @param parameters Expects a list of tuples with parameters to replace in the query (like SQL prepared statements).
+     *                   For example [(Name,Tobias)] --> replaces :name in query with value tobias
+     * @param <T>
+     * @return result set
+     * @throws HibernateException
+     */
+    public static <T> List<T> complexQuery(String queryString, List<Pair<String, T>> parameters) throws HibernateException {
         Session session = openSession();
         Transaction tx = null;
         List<T> result = new ArrayList<T>();
-        try{
+        try {
             tx = session.beginTransaction();
             Query query = session.createQuery(queryString);
-            for ( Pair<String,T> parameter : parameters) {
+            for (Pair<String, T> parameter : parameters) {
                 query.setParameter(parameter.getKey(), parameter.getValue());
             }
             result = query.list();
             tx.commit();
         } catch (HibernateException e) {
-            if (tx!=null)
+            if (tx != null)
                 tx.rollback();
             throw new HibernateError(e.getMessage());
         } finally {
