@@ -100,7 +100,7 @@ public class FeatureExtractor {
                 char[] code = git.getSourceCode(path, commitId);
                 CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
                 for (IFeatureGroup featureGroup : featureGroups) {
-                    Map<String, Double> features = featureGroup.extract(ast, code);
+                    Map<String, Double> features = featureGroup.extract(version, ast, code);
 
                     Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
                     while (it.hasNext()) {

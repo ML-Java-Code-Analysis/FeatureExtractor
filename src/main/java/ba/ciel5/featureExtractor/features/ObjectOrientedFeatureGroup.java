@@ -5,6 +5,7 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.ListUtil;
 import org.eclipse.jdt.core.dom.*;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
-    public Map<String, Double> extract(CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
 
         // TODO not yet implemented
         // TODO very hard to implement wihtout scan the whole source-code for every commit...
@@ -57,7 +58,6 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
                 }
             }
 
-
             List<MethodDeclaration> classMethods = AbstractSyntaxTreeUtil.getClassMethods(javaClass);
 
             int externalMethodCalls = 0;
@@ -66,8 +66,7 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
                 List<FieldAccess> fieldAccess = AbstractSyntaxTreeUtil.getFieldAccess(classMethod);
 
                 // Save in methodCallNames all called methods that are not member of the class
-                // TODO maybe there is a better more effienct way to finally get all methods call that are not member of the class
-                List<String> methodCallNames = methodCalls
+                 List<String> methodCallNames = methodCalls
                         .stream()
                         .map(jmc -> jmc.getName().toString())
                         .collect(Collectors.toList());
@@ -81,8 +80,7 @@ public class ObjectOrientedFeatureGroup implements IFeatureGroup {
                 externalMethodCalls += methodCallNames.size();
 
                 //Save in filedAccessNames all variable access that does not access a class variable
-                // TODO maybe there is a better more effienct way to finally get all variable access that are not member of the class
-                List<String> fieldAccessNames = fieldAccess
+                 List<String> fieldAccessNames = fieldAccess
                         .stream()
                         .map(fa -> fa.getName().toString())
                         .collect(Collectors.toList());

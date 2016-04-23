@@ -6,6 +6,7 @@
 
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.model.Version;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import ba.ciel5.featureExtractor.utils.Average;
@@ -15,7 +16,7 @@ import java.util.*;
 
 public class LinesOfCodeFeatureGroup implements IFeatureGroup {
 
-    public Map<String, Double> extract(CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
         double physicalLinesCount = 0;
         double sourceLinesCount = 0;
         double blankLinesCount = 0;

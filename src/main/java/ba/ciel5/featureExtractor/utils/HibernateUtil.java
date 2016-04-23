@@ -14,7 +14,6 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -99,5 +98,29 @@ public class HibernateUtil {
             session.close();
         }
         return result;
+    }
+
+    /**
+     * Reloads a lazy loaded object from the database an returns it
+     * @param object you want to reload
+     * @param <T>
+     * @return the reloaded object
+     */
+    public static <T> T fetchLazyContent(T object) {
+        Session session = openSession();
+        Transaction tx = null;
+        try {
+            tx = session.beginTransaction();
+            session.update(object);
+            Hibernate.initialize(object);
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx != null)
+                tx.rollback();
+            throw new HibernateError(e.getMessage());
+        } finally {
+            session.close();
+        }
+        return object;
     }
 }

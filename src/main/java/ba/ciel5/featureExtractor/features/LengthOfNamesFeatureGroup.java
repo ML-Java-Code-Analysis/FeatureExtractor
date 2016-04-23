@@ -5,6 +5,7 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.Average;
 import org.eclipse.jdt.core.dom.*;
@@ -15,13 +16,11 @@ import java.util.stream.Collectors;
 
 public class LengthOfNamesFeatureGroup implements IFeatureGroup {
 
-    public Map<String, Double> extract(CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
 
         List<List<Integer>> variableLengths = new ArrayList<List<Integer>>();
         List<List<Integer>> methodLengths = new ArrayList<List<Integer>>();
         List<Integer> classLengths = new ArrayList<Integer>();
-
-
 
         List<TypeDeclaration> javaClasses = null;
         try {
@@ -36,7 +35,6 @@ public class LengthOfNamesFeatureGroup implements IFeatureGroup {
         for (TypeDeclaration javaClass : javaClasses) {
             List<Integer> variableLengthsPerClass = new ArrayList<Integer>();
             List<Integer> methodLengthsPerClass;
-
 
             List<FieldDeclaration> classVariables = AbstractSyntaxTreeUtil.getClassVariables(javaClass);
 

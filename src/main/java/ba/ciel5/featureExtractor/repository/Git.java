@@ -37,7 +37,7 @@ public class Git {
      * @see IOException
      */
     public Git(String path) throws IOException {
-        String gitPath = path + "\\.git";
+        String gitPath = path + File.separator + ".git";
 
         FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
         repositoryBuilder.setMustExist(true);
