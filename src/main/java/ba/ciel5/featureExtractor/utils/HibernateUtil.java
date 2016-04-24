@@ -60,6 +60,7 @@ public class HibernateUtil {
 
     /**
      * take a string and execute a simple query (no filters)
+     *
      * @param queryString for example FROM Version (select all datasets from table version)
      * @param <T>
      * @return result set
@@ -71,9 +72,10 @@ public class HibernateUtil {
 
     /**
      * take a string and execure a simple query with filters
+     *
      * @param queryString for example FROM Version WHERE name = :name
-     * @param parameters Expects a list of tuples with parameters to replace in the query (like SQL prepared statements).
-     *                   For example [(Name,Tobias)] --> replaces :name in query with value tobias
+     * @param parameters  Expects a list of tuples with parameters to replace in the query (like SQL prepared statements).
+     *                    For example [(Name,Tobias)] --> replaces :name in query with value tobias
      * @param <T>
      * @return result set
      * @throws HibernateException
@@ -102,17 +104,31 @@ public class HibernateUtil {
 
     /**
      * Reloads a lazy loaded object from the database an returns it
-     * @param object you want to reload
+     *
+     * @param objects objects. First: Session object. Second: Object to initialize
+     *                (if object to initialize is zero assume that is the same
+     *                as the session object)
      * @param <T>
      * @return the reloaded object
      */
-    public static <T> T fetchLazyContent(T object) {
+    public static <T> T fetchLazyContent(T... objects) {
         Session session = openSession();
         Transaction tx = null;
+
+        T sessionObject = objects[0];
+        T initializeObject;
+
+        if (objects.length == 1)
+            initializeObject = sessionObject;
+        else if (objects.length == 2)
+            initializeObject = objects[1];
+        else
+            throw new HibernateError("Wrong amount of arguments. Arg1: session Object. Arg2: (Optional) Hibernateobject");
+
         try {
             tx = session.beginTransaction();
-            session.update(object);
-            Hibernate.initialize(object);
+            session.update(sessionObject);
+            Hibernate.initialize(initializeObject);
             tx.commit();
         } catch (HibernateException e) {
             if (tx != null)
@@ -121,6 +137,6 @@ public class HibernateUtil {
         } finally {
             session.close();
         }
-        return object;
+        return initializeObject;
     }
 }
