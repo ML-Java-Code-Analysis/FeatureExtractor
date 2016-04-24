@@ -25,5 +25,6 @@
         <mapping class="ba.ciel5.featureExtractor.model.Commit"/>
         <mapping class="ba.ciel5.featureExtractor.model.File"/>
         <mapping class="ba.ciel5.featureExtractor.model.FeatureValue"/>
+        <mapping class="ba.ciel5.featureExtractor.model.Issue" />
     </session-factory>
 </hibernate-configuration>

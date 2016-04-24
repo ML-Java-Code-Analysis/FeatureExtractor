@@ -58,6 +58,12 @@ public class Commit {
     @OneToMany(mappedBy = "commit", fetch=FetchType.LAZY)
     private Collection<Version> versions = new ArrayList<Version>();
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(name="commit_issue",
+            joinColumns={@JoinColumn(name="issue_id")},
+            inverseJoinColumns={@JoinColumn(name="commit_id")})
+    private Collection<Issue> issues = new ArrayList<Issue>();
+
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
      */
@@ -120,4 +126,6 @@ public class Commit {
     public Collection<Version> getVersions() {
         return versions;
     }
+
+    public Collection<Issue> getIssues() { return issues; }
 }

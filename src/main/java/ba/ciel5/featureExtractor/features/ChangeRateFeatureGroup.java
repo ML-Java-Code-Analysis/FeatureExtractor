@@ -2,15 +2,14 @@ package ba.ciel5.featureExtractor.features;
 
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.File;
+import ba.ciel5.featureExtractor.model.Issue;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import javafx.util.Pair;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.hibernate.HibernateError;
-import sun.nio.cs.HistoricallyNamedCharset;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -24,8 +23,8 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
 
     private static Logger logger;
 
-    private enum Type {
-        ADDEDLINES, DELETEDLINES, AUTHOR, BUGS, ENHANCEMENTS
+    private enum IssueType {
+        BUG, ENHANCEMENT, OTHER
     }
 
     public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
@@ -55,18 +54,24 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         double numberOfAuthorsLastMonth = 0;
         double numberOfAuthorsLastThreeMonths = 0;
         double numberOfAuthorsLastSixMonths = 0;
+        double numberOfAuthorsLastTwelfMonths = 0;
+        double numberOfAuthorsLastTwentyFourMonths = 0;
 
         double numberOfBugsLastDay = 0;
         double numberOfBugsLastWeek = 0;
         double numberOfBugsLastMonth = 0;
         double numberOfBugsLastThreeMonths = 0;
         double numberOfBugsLastSixMonths = 0;
+        double numberOfBugsLastTwelfMonths = 0;
+        double numberOfBugsLastTwentyFourMonths = 0;
 
         double numberOfEnhancementsLastDay = 0;
         double numberOfEnhancementsLastWeek = 0;
         double numberOfEnhancementsLastMonth = 0;
         double numberOfEnhancementsLastThreeMonths = 0;
         double numberOfEnhancementsLastSixMonths = 0;
+        double numberOfEnhancementsLastTwelfMonths = 0;
+        double numberOfEnhancementsLastTwentyFourMonths = 0;
 
         // Get file which belongs to this version
         File file = HibernateUtil.fetchLazyContent(version.getFile());
@@ -90,6 +95,9 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         //Fetch all versions (Lazy fetching)
         commits.forEach(c -> HibernateUtil.fetchLazyContent(c, c.getVersions()));
 
+        //Fetch all issues (Lazy fetching)
+        commits.forEach(c -> HibernateUtil.fetchLazyContent(c, c.getIssues()));
+
         List<Commit> sortedCommits = getSortedCommitsByTimestamp(commits);
         List<Commit> olderCommits = getAllOlderCommits(commit, sortedCommits);
 
@@ -97,6 +105,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         //System.out.println("commit: " + commit.getMessage());
 
         daysBetweenLastCommit = getDaysBetweenLastCommit(commit, olderCommits);
+
         numberOfAddedLinesLastDay = getNumberOfAddedLinesForDays(1, commit, olderCommits);
         numberOfAddedLinesLastWeek = getNumberOfAddedLinesForDays(7, commit, olderCommits);
         numberOfAddedLinesLastMonth = getNumberOfAddedLinesForDays(30, commit, olderCommits);
@@ -113,7 +122,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         numberOfDeletedLinesLastTwelfMonths = getNumberOfDeletedLinesForDays(365, commit, olderCommits);
         numberOfDeletedLinesLastTwentyFourMonths = getNumberOfDeletedLinesForDays(730, commit, olderCommits);
 
-
         double numberOfChangedLinesLastDay = numberOfAddedLinesLastDay + numberOfDeletedLinesLastDay;
         double numberOfChangedLinesLastWeek = numberOfAddedLinesLastWeek + numberOfDeletedLinesLastWeek;
         double numberOfChangedLinesLastMonth = numberOfAddedLinesLastMonth + numberOfDeletedLinesLastMonth;
@@ -122,6 +130,35 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         double numberOfChangedLinesLastTwelfMonths = numberOfAddedLinesLastTwelfMonths + numberOfDeletedLinesLastTwelfMonths;
         double numberOfChangedLinesLastTwentyFourMonths = numberOfAddedLinesLastTwentyFourMonths + numberOfDeletedLinesLastTwentyFourMonths;
 
+        numberOfAuthorsLastDay = getNumberOfAuthorsForDays(1, commit, olderCommits);
+        numberOfAuthorsLastWeek = getNumberOfAuthorsForDays(7, commit, olderCommits);
+        numberOfAuthorsLastMonth = getNumberOfAuthorsForDays(30, commit, olderCommits);
+        numberOfAuthorsLastThreeMonths = getNumberOfAuthorsForDays(90, commit, olderCommits);
+        numberOfAuthorsLastSixMonths = getNumberOfAuthorsForDays(180, commit, olderCommits);
+        numberOfAuthorsLastTwelfMonths = getNumberOfAuthorsForDays(365, commit, olderCommits);
+        numberOfAuthorsLastTwentyFourMonths = getNumberOfAuthorsForDays(730, commit, olderCommits);
+
+//        numberOfBugsLastDay = getNumberOfIssuesForDays(1, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastWeek = getNumberOfIssuesForDays(7, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastMonth = getNumberOfIssuesForDays(30, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastThreeMonths = getNumberOfIssuesForDays(90, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastSixMonths = getNumberOfIssuesForDays(180, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastTwelfMonths = getNumberOfIssuesForDays(365, commit, olderCommits, IssueType.BUG.toString());
+//        numberOfBugsLastTwentyFourMonths = getNumberOfIssuesForDays(730, commit, olderCommits, IssueType.BUG.toString());
+//
+//        numberOfEnhancementsLastDay = getNumberOfIssuesForDays(1, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastWeek = getNumberOfIssuesForDays(7, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastMonth = getNumberOfIssuesForDays(30, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastThreeMonths = getNumberOfIssuesForDays(90, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastSixMonths = getNumberOfIssuesForDays(180, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastTwelfMonths = getNumberOfIssuesForDays(365, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+//        numberOfEnhancementsLastTwentyFourMonths = getNumberOfIssuesForDays(730, commit, olderCommits, IssueType.ENHANCEMENT.toString());
+
+        if ( numberOfEnhancementsLastTwentyFourMonths > 0 )
+            System.out.println("Enhancement in 2 years: " + numberOfEnhancementsLastTwentyFourMonths);
+
+        if ( numberOfBugsLastTwentyFourMonths > 0 )
+            System.out.println("Bug in 2 years: " + numberOfBugsLastTwentyFourMonths);
 
         Map<String, Double> map = new HashMap<String, Double>();
         map.put("DBLC", daysBetweenLastCommit);
@@ -146,7 +183,27 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         map.put("NCLL180D", numberOfChangedLinesLastSixMonths);
         map.put("NCLL365D", numberOfChangedLinesLastTwelfMonths);
         map.put("NCLL730D", numberOfChangedLinesLastTwentyFourMonths);
-
+        map.put("NALD", numberOfAuthorsLastDay);
+        map.put("NAL7D", numberOfAuthorsLastWeek);
+        map.put("NAL30D", numberOfAuthorsLastMonth);
+        map.put("NAL90D", numberOfAuthorsLastThreeMonths);
+        map.put("NAL180D", numberOfAuthorsLastSixMonths);
+        map.put("NAL365D", numberOfAuthorsLastTwelfMonths);
+        map.put("NAL730D", numberOfAuthorsLastTwentyFourMonths);
+        map.put("NOBD", numberOfBugsLastDay);
+        map.put("NOB7D", numberOfBugsLastWeek);
+        map.put("NOB30D", numberOfBugsLastMonth);
+        map.put("NOB90D", numberOfBugsLastThreeMonths);
+        map.put("NOB180D", numberOfBugsLastSixMonths);
+        map.put("NOB365D", numberOfBugsLastTwelfMonths);
+        map.put("NOB730D", numberOfBugsLastTwentyFourMonths);
+        map.put("NOED", numberOfEnhancementsLastDay);
+        map.put("NOE7D", numberOfEnhancementsLastWeek);
+        map.put("NOE30D", numberOfEnhancementsLastMonth);
+        map.put("NOE90D", numberOfEnhancementsLastThreeMonths);
+        map.put("NOE180D", numberOfEnhancementsLastSixMonths);
+        map.put("NOE365D", numberOfEnhancementsLastTwelfMonths);
+        map.put("NOE730D", numberOfEnhancementsLastTwentyFourMonths);
 
         return map;
     }
@@ -267,9 +324,10 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         //Sum all added lines over all versions of all commits and return it
         return commitsInRange
                 .stream()
-                .mapToInt(
+                .mapToLong(
                         c -> c.getVersions()
                                 .stream()
+                                //This quers is insane
                                 .map(v -> HibernateUtil.fetchLazyContent(v))
                                 .mapToInt(v -> v.getLinesAdded())
                                 .sum())
@@ -299,12 +357,72 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         //Sum all added lines over all versions of all commits and return it
         return commitsInRange
                 .stream()
-                .mapToInt(
+                .mapToLong(
                         c -> c.getVersions()
                                 .stream()
                                 .map(v -> HibernateUtil.fetchLazyContent(v))
                                 .mapToInt(v -> v.getLinesDeleted())
                                 .sum())
                 .sum();
+    }
+
+    /**
+     * Get number of authors for the last n days
+     *
+     * @param days
+     * @param commit
+     * @param olderCommits commits that are older than commit sorted
+     * @return
+     */
+    private double getNumberOfAuthorsForDays(int days, Commit commit, List<Commit> olderCommits) {
+
+        //There is no commit before the actual
+        if (olderCommits.size() == 0)
+            return 0;
+
+        //Get date threshold
+        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+
+        //Get commits that are newer than the threshold
+        List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
+
+        //Sum all added lines over all versions of all commits and return it
+        Map<String, Integer> authors = new HashMap<String, Integer>();
+
+        commitsInRange
+                .forEach(
+                        c -> authors.put(c.getAuthor(), 1)
+                );
+
+        return authors.size();
+    }
+
+    /**
+     * Get number of issues for the last n days
+     *
+     * @param days
+     * @param commit
+     * @param olderCommits commits that are older than commit sorted
+     * @return
+     */
+    private double getNumberOfIssuesForDays(int days, Commit commit, List<Commit> olderCommits, String type) {
+
+        //There is no commit before the actual
+        if (olderCommits.size() == 0)
+            return 0;
+
+        //Get date threshold
+        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+
+        //Get commits that are newer than the threshold
+        List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
+        double issueCount = 0;
+
+        for (Commit c : commitsInRange)
+            for (Issue i : commit.getIssues())
+                if (i.getType().equals(type))
+                    issueCount++;
+
+        return issueCount;
     }
 }
