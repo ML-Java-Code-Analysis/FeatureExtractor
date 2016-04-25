@@ -67,7 +67,14 @@ public class FeatureExtractor {
         // Get all versions (except deleted ones)
         List<Version> versions = null;
         try {
-            versions = HibernateUtil.complexQuery("SELECT version FROM Commit as c INNER JOIN c.versions AS version WHERE c.repositoryId = :repositoryId AND version.deleted = FALSE", new ArrayList(Arrays.asList(new Pair("repositoryId", Integer.parseInt(repository.getId())))));
+            versions = HibernateUtil.complexQuery("SELECT version " +
+                    "FROM Commit as c " +
+                    "INNER JOIN c.versions AS version " +
+                    "WHERE c.repositoryId = :repositoryId " +
+                    "AND version.deleted = FALSE"
+                    , new ArrayList(
+                            Arrays.asList(
+                                    new Pair("repositoryId", Integer.parseInt(repository.getId())))));
         } catch (HibernateError e) {
             logger.log(Level.SEVERE, "DB Query failed", e);
         }

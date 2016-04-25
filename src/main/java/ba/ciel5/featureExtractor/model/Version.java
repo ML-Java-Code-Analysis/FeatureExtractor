@@ -44,8 +44,6 @@ public class Version {
     @Column(name = "deleted")
     private Boolean deleted;
 
-
-
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
      */

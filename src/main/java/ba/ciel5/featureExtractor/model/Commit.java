@@ -55,9 +55,11 @@ public class Commit {
     @Column(name = "complete")
     private Boolean isComplete;
 
-    @OneToMany(mappedBy = "commit", fetch=FetchType.LAZY)
+    //@OneToMany(mappedBy = "commit", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "commit", fetch=FetchType.EAGER)
     private Collection<Version> versions = new ArrayList<Version>();
 
+    //@ManyToMany(fetch=FetchType.LAZY)
     @ManyToMany(fetch=FetchType.LAZY)
     @JoinTable(name="commit_issue",
             joinColumns={@JoinColumn(name="issue_id")},

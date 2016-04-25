@@ -24,10 +24,12 @@ public class Repository {
     @Column(name = "url")
     private String url;
 
-    @OneToMany(mappedBy = "repository", fetch=FetchType.LAZY)
+    //@OneToMany(mappedBy = "repository", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "repository", fetch=FetchType.EAGER)
     private Collection<File> files = new ArrayList<File>();
 
-    @OneToMany(mappedBy = "repository", fetch=FetchType.LAZY)
+    //@OneToMany(mappedBy = "repository", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "repository", fetch=FetchType.EAGER)
     private Collection<Commit> commits = new ArrayList<Commit>();
 
     /**

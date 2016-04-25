@@ -1,5 +1,6 @@
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.File;
 import ba.ciel5.featureExtractor.model.Issue;
@@ -73,33 +74,30 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         double numberOfEnhancementsLastTwelfMonths = 0;
         double numberOfEnhancementsLastTwentyFourMonths = 0;
 
-        // Get file which belongs to this version
-        File file = HibernateUtil.fetchLazyContent(version.getFile());
+        //TODO Min / Max / Med / Mean --> von Zeitraum zwischen (Day, Week, Month, ThreeMonths, SixMonths, Twelf Months, TwentyFourMonths) älteren Commits
+        //TODO Min / Max / Med / Mean --> von Grösse (Day, Week, Month, ThreeMonths, SixMonths, Twelf Months, TwentyFourMonths) älteren Commits
+        //TODO (Day, Week, Month, ThreeMonths, SixMonths, Twelf Months, TwentyFourMonths) --> Grösse der Commits
+        //TODO Performance optimizing
 
-        // Get the commit which belongs to that file
         Commit commit = HibernateUtil.fetchLazyContent(version.getCommit());
 
-        // Get all versions which belong to that file
-        List<Version> versions = null;
+        //Get all commits that are older than the actual commit
+        List<Commit> olderCommits = null;
         try {
-            versions = HibernateUtil.complexQuery(
-                    "FROM Version as v WHERE v.fileId = :fileId",
-                    new ArrayList(Arrays.asList(new Pair("fileId", file.getId()))));
+            olderCommits = HibernateUtil.complexQuery(
+                            "SELECT commit " +
+                            "FROM Version as version " +
+                            "INNER JOIN version.commit as commit " +
+                                    "WHERE version.fileId = :fileId " +
+                                    "AND commit.timestamp < :timestamp " +
+                                    "ORDER BY commit.timestamp ASC",
+                    new ArrayList(Arrays.asList(
+                            new Pair("fileId", version.getFileId()),
+                            new Pair("timestamp", commit.getTimestamp())
+                            )));
         } catch (HibernateError e) {
             logger.log(Level.SEVERE, "DB Query failed", e);
         }
-
-        // Get all commits which belong to that file
-        List<Commit> commits = versions.stream().map(v -> HibernateUtil.fetchLazyContent(v.getCommit())).collect(Collectors.toList());
-
-        //Fetch all versions (Lazy fetching)
-        commits.forEach(c -> HibernateUtil.fetchLazyContent(c, c.getVersions()));
-
-        //Fetch all issues (Lazy fetching)
-        commits.forEach(c -> HibernateUtil.fetchLazyContent(c, c.getIssues()));
-
-        List<Commit> sortedCommits = getSortedCommitsByTimestamp(commits);
-        List<Commit> olderCommits = getAllOlderCommits(commit, sortedCommits);
 
         //System.out.println(file.getId());
         //System.out.println("commit: " + commit.getMessage());
@@ -121,14 +119,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         numberOfDeletedLinesLastSixMonths = getNumberOfDeletedLinesForDays(180, commit, olderCommits);
         numberOfDeletedLinesLastTwelfMonths = getNumberOfDeletedLinesForDays(365, commit, olderCommits);
         numberOfDeletedLinesLastTwentyFourMonths = getNumberOfDeletedLinesForDays(730, commit, olderCommits);
-
-        double numberOfChangedLinesLastDay = numberOfAddedLinesLastDay + numberOfDeletedLinesLastDay;
-        double numberOfChangedLinesLastWeek = numberOfAddedLinesLastWeek + numberOfDeletedLinesLastWeek;
-        double numberOfChangedLinesLastMonth = numberOfAddedLinesLastMonth + numberOfDeletedLinesLastMonth;
-        double numberOfChangedLinesLastThreeMonths = numberOfAddedLinesLastThreeMonths + numberOfDeletedLinesLastThreeMonths;
-        double numberOfChangedLinesLastSixMonths = numberOfAddedLinesLastSixMonths + numberOfDeletedLinesLastSixMonths;
-        double numberOfChangedLinesLastTwelfMonths = numberOfAddedLinesLastTwelfMonths + numberOfDeletedLinesLastTwelfMonths;
-        double numberOfChangedLinesLastTwentyFourMonths = numberOfAddedLinesLastTwentyFourMonths + numberOfDeletedLinesLastTwentyFourMonths;
 
         numberOfAuthorsLastDay = getNumberOfAuthorsForDays(1, commit, olderCommits);
         numberOfAuthorsLastWeek = getNumberOfAuthorsForDays(7, commit, olderCommits);
@@ -176,13 +166,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         map.put("NDLL180D", numberOfDeletedLinesLastSixMonths);
         map.put("NDLL365D", numberOfDeletedLinesLastTwelfMonths);
         map.put("NDLL730D", numberOfDeletedLinesLastTwentyFourMonths);
-        map.put("NCLLD", numberOfChangedLinesLastDay);
-        map.put("NCLL7D", numberOfChangedLinesLastWeek);
-        map.put("NCLL30D", numberOfChangedLinesLastMonth);
-        map.put("NCLL90D", numberOfChangedLinesLastThreeMonths);
-        map.put("NCLL180D", numberOfChangedLinesLastSixMonths);
-        map.put("NCLL365D", numberOfChangedLinesLastTwelfMonths);
-        map.put("NCLL730D", numberOfChangedLinesLastTwentyFourMonths);
         map.put("NALD", numberOfAuthorsLastDay);
         map.put("NAL7D", numberOfAuthorsLastWeek);
         map.put("NAL30D", numberOfAuthorsLastMonth);
@@ -327,8 +310,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
                 .mapToLong(
                         c -> c.getVersions()
                                 .stream()
-                                //This quers is insane
-                                .map(v -> HibernateUtil.fetchLazyContent(v))
                                 .mapToInt(v -> v.getLinesAdded())
                                 .sum())
                 .sum();
@@ -360,7 +341,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
                 .mapToLong(
                         c -> c.getVersions()
                                 .stream()
-                                .map(v -> HibernateUtil.fetchLazyContent(v))
                                 .mapToInt(v -> v.getLinesDeleted())
                                 .sum())
                 .sum();
