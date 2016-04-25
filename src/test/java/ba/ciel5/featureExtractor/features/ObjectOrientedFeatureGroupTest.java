@@ -22,8 +22,6 @@ public class ObjectOrientedFeatureGroupTest {
         Map<String, Double> result = feature.extract(null, ast, code);
 
         assertEquals(8.0, result.get("WMC"), 0.0);
-        //TODO not implemented yet
-        //assertEquals(4.0, result.get("DIT"), 0.0);
         assertEquals(6.0, result.get("CBO"), 0.0);
         assertEquals(14.0, result.get("RFC"), 0.0);
         assertEquals(1.0, result.get("LCOM"), 0.0);
