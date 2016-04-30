@@ -29,8 +29,7 @@ public class File {
     @Column(name = "language")
     private String language;
 
-    //@OneToMany(mappedBy = "file", fetch=FetchType.LAZY)
-    @OneToMany(mappedBy = "file", fetch=FetchType.EAGER)
+    @OneToMany(mappedBy = "file", fetch=FetchType.LAZY)
     private Collection<Version> versions = new ArrayList<Version>();
 
     /**

@@ -55,15 +55,13 @@ public class Commit {
     @Column(name = "complete")
     private Boolean isComplete;
 
-    //@OneToMany(mappedBy = "commit", fetch=FetchType.LAZY)
     @OneToMany(mappedBy = "commit", fetch=FetchType.EAGER)
     private Collection<Version> versions = new ArrayList<Version>();
 
-    //@ManyToMany(fetch=FetchType.LAZY)
-    @ManyToMany(fetch=FetchType.LAZY)
+    @ManyToMany(fetch=FetchType.EAGER)
     @JoinTable(name="commit_issue",
-            joinColumns={@JoinColumn(name="issue_id")},
-            inverseJoinColumns={@JoinColumn(name="commit_id")})
+            joinColumns={@JoinColumn(name="commit_id")},
+            inverseJoinColumns={@JoinColumn(name="issue_id")})
     private Collection<Issue> issues = new ArrayList<Issue>();
 
     /**

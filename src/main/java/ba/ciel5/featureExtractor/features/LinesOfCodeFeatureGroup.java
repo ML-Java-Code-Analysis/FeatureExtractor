@@ -16,6 +16,7 @@ import java.util.*;
 
 public class LinesOfCodeFeatureGroup implements IFeatureGroup {
 
+    @Override
     public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
         double physicalLinesCount = 0;
         double sourceLinesCount = 0;

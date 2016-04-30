@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
+    @Override
     public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
 
         // TODO not yet implemented

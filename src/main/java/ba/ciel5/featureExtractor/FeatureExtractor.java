@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 public class FeatureExtractor {
     private static Logger logger;
     private static Git git;
+    private static int counter = 1;
 
     public static void main(String[] args) {
         logger = Logger.getLogger("main");
@@ -68,10 +69,10 @@ public class FeatureExtractor {
         List<Version> versions = null;
         try {
             versions = HibernateUtil.complexQuery("SELECT version " +
-                    "FROM Commit as c " +
-                    "INNER JOIN c.versions AS version " +
-                    "WHERE c.repositoryId = :repositoryId " +
-                    "AND version.deleted = FALSE"
+                            "FROM Commit as c " +
+                            "INNER JOIN c.versions AS version " +
+                            "WHERE c.repositoryId = :repositoryId " +
+                            "AND version.deleted = FALSE"
                     , new ArrayList(
                             Arrays.asList(
                                     new Pair("repositoryId", Integer.parseInt(repository.getId())))));
@@ -89,47 +90,12 @@ public class FeatureExtractor {
 
         List<IFeatureGroup> featureGroups = getFeatureGroups();
 
-        int log_interval = 1, i = 1;
+        int log_interval_temp = 1, size = versions.size();
         if (versions.size() > 1000)
-            log_interval = 100;
+            log_interval_temp = 100;
+        final int log_interval = log_interval_temp;
 
-        for (Version version : versions) {
-            String path = version.getPath();
-            String commitId = version.getCommitId();
-
-            if (i % log_interval == 0) {
-                double prc = (double) i / versions.size() * 100.0;
-                logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - processed versions: " + i);
-            }
-            i++;
-
-            try {
-                char[] code = git.getSourceCode(path, commitId);
-                CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
-                for (IFeatureGroup featureGroup : featureGroups) {
-                    Map<String, Double> features = featureGroup.extract(version, ast, code);
-
-                    Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<String, Double> feature = it.next();
-                        String featureId = feature.getKey();
-                        Double value = feature.getValue();
-                        it.remove(); // avoids a ConcurrentModificationException
-
-                        // TODO: uncomment here to write feature to DB
-                        try {
-                            FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
-                        } catch (HibernateError e) {
-                            logger.log(Level.SEVERE, "Could not add Feature: " + featureId + " with value: " + value, e);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                String msg = "There was a problem with the file " + path +
-                        " from commit " + commitId + ". Skipping this one.";
-                logger.log(Level.WARNING, msg, e);
-            }
-        }
+        versions.parallelStream().forEach(version -> processFeatures(version, featureGroups, log_interval, size));
 
         git.closeRepository();
         logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
@@ -168,4 +134,39 @@ public class FeatureExtractor {
         return reflections.getSubTypesOf(IFeatureGroup.class);
     }
 
+    private static void processFeatures(Version version, List<IFeatureGroup> featureGroups, int log_interval, int size) {
+        String path = version.getPath();
+        String commitId = version.getCommitId();
+
+        if (counter % log_interval == 0) {
+            double prc = (double) counter / size * 100.0;
+            logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - processed versions: " + counter);
+        }
+        counter++;
+
+        try {
+            char[] code = git.getSourceCode(path, commitId);
+            CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
+            for (IFeatureGroup featureGroup : featureGroups) {
+                Map<String, Double> features = featureGroup.extract(version, ast, code);
+
+                Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, Double> feature = it.next();
+                    String featureId = feature.getKey();
+                    Double value = feature.getValue();
+                    it.remove(); // avoids a ConcurrentModificationException
+                    try {
+                        FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value);
+                    } catch (HibernateError e) {
+                        logger.log(Level.SEVERE, "Could not add Feature: " + featureId + " with value: " + value, e);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            String msg = "There was a problem with the file " + path +
+                    " from commit " + commitId + ". Skipping this one.";
+            logger.log(Level.WARNING, msg, e);
+        }
+    }
 }

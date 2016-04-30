@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 public class LengthOfNamesFeatureGroup implements IFeatureGroup {
 
+    @Override
     public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
 
         List<List<Integer>> variableLengths = new ArrayList<List<Integer>>();

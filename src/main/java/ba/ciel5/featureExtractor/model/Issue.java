@@ -21,7 +21,7 @@ public class Issue {
     private String type;
 
     //@ManyToMany(fetch=FetchType.LAZY)
-    @ManyToMany(fetch=FetchType.EAGER)
+    @ManyToMany(fetch=FetchType.EAGER, mappedBy = "issues")
     private Collection<Commit> commits = new ArrayList<Commit>();
 
     /**
