@@ -19,7 +19,7 @@ public class LinesOfCodeFeatureGroupTest {
         LinesOfCodeFeatureGroup feature = new LinesOfCodeFeatureGroup();
         char[] code = TestClass1.getTestCode().toCharArray();
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
-        Map<String, Double> result = feature.extract(null, ast, code);
+        Map<String, Double> result = feature.extract(null, null, ast, code);
 
         assertEquals(80.0, result.get("PLOC"), 0.0);
         assertEquals(55.0, result.get("SLOC"), 0.0);

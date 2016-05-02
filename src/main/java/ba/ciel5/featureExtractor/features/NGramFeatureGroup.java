@@ -3,37 +3,61 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.features.IFeatureGroup;
+import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
-import org.eclipse.jdt.core.dom.CompilationUnit;
+import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
+import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
 
 public class NGramFeatureGroup implements IFeatureGroup {
 
     @Override
-    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
-
+    public Map<String, Double> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
         Map<String, Double> map = new HashMap<String, Double>();
-        //map.put("WMC", weightedMethodsPerClassPerFile);
+        List<String> flatCode = new ArrayList<String>();
+
+        ASTVisitor visitor = new ASTVisitor() {
+
+            @Override
+            public void preVisit(ASTNode node) {
+
+                //Compilation Unit - skip it
+                if ( node.getParent() == null )
+                    super.preVisit(node);
+                else {
+                    flatCode.add(node.getClass().getSimpleName());
+                    super.preVisit(node);
+                }
+            }
+        };
+        ast.accept(visitor);
+        List<String> ngrams = generateNgramsUpto(flatCode,10);
+        for ( String ngram : ngrams ) {
+            Double value=1.0;
+            if ( map.containsKey(ngram) )
+                value = map.get(ngram) + 1;
+
+            map.put(ngram,value);
+        }
         return map;
     }
 
     /**
      *
-     * @param str should has at least one string
+     * @param flatCode Code List
      * @param maxGramSize should be 1 at least
      * @return set of continuous word n-grams up to maxGramSize from the sentence
      */
-    private List<String> generateNgramsUpto(String str, int maxGramSize) {
-
-        List<String> sentence = Arrays.asList(str.split("[\\W+]"));
+    private List<String> generateNgramsUpto(List<String> flatCode, int maxGramSize) {
 
         List<String> ngrams = new ArrayList<String>();
         int ngramSize = 0;
         StringBuilder sb = null;
 
         //sentence becomes ngrams
-        for (ListIterator<String> it = sentence.listIterator(); it.hasNext();) {
+        for (ListIterator<String> it = flatCode.listIterator(); it.hasNext();) {
             String word = (String) it.next();
 
             //1- add the word itself
@@ -44,7 +68,7 @@ public class NGramFeatureGroup implements IFeatureGroup {
 
             //2- insert prevs of the word and add those too
             while(it.hasPrevious() && ngramSize<maxGramSize){
-                sb.insert(0,' ');
+                sb.insert(0,'-');
                 sb.insert(0,it.previous());
                 ngrams.add(sb.toString());
                 ngramSize++;

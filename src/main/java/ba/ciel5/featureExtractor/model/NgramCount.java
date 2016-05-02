@@ -8,7 +8,6 @@ package ba.ciel5.featureExtractor.model;
 
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "ngram_count")
-public class NgramCount implements Serializable {
+public class NGramCount implements Serializable {
 
     @Id
     @Column(name = "ngram_id")
@@ -37,7 +36,7 @@ public class NgramCount implements Serializable {
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
      */
-    public NgramCount() {
+    public NGramCount() {
 
     }
 
@@ -46,7 +45,7 @@ public class NgramCount implements Serializable {
      * @param versionId The UUID of the version this ngram count belongs to.
      * @param count     The amount of occurences of this ngram for this version.
      */
-    public NgramCount(String ngramId, String versionId, int count) {
+    public NGramCount(String ngramId, String versionId, int count) {
         this.ngramId = ngramId;
         this.versionId = versionId;
         this.count = count;
@@ -69,16 +68,31 @@ public class NgramCount implements Serializable {
     }
 
     /**
-     * Set the feature value for a version. If a value already exists, it will be updated.
+     * Set the ngram count for a version. If a value already exists, it will be updated.
+     *
+     * @param ngramIds   A list of the Strings representation of this ngram.
+     * @param versionIds A list of the UUIDs of the version this value belongs to.
+     * @param values     A list of the values this feature has for this version.
+     */
+    public static void addOrUpdateFeatureValueBulk(List<String> ngramIds, List<String> versionIds, List<Double> values) {
+        Session session = HibernateUtil.openSession();
+        for ( int i=0; i<ngramIds.size(); i++ ) {
+            addOrUpdateNgramCount(ngramIds.get(i), versionIds.get(i), values.get(i).intValue(), session);
+        }
+        session.close();
+    }
+
+    /**
+     * Set the ngram count for a version. If a value already exists, it will be updated.
      *
      * @param ngramId   The String representation of this ngram.
      * @param versionId The UUID of the version this ngram count belongs to.
      * @param count     The amount of occurences of this ngram for this version.
      * @return The FeatureValue object which was subject to the change.
      */
-    public static NgramCount addOrUpdateNgramCount(String ngramId, String versionId, int count) {
+    public static NGramCount addOrUpdateNgramCount(String ngramId, String versionId, int count) {
         Session session = HibernateUtil.openSession();
-        NgramCount ngramCount = addOrUpdateNgramCount(ngramId, versionId, count, session);
+        NGramCount ngramCount = addOrUpdateNgramCount(ngramId, versionId, count, session);
         session.close();
         return ngramCount;
     }
@@ -92,12 +106,12 @@ public class NgramCount implements Serializable {
      * @param session   The DB session to use.
      * @return The FeatureValue object which was subject to the change.
      */
-    public static NgramCount addOrUpdateNgramCount(String ngramId, String versionId, int count, Session session) throws HibernateException {
-        NgramCount ngramCount = null;
+    public static NGramCount addOrUpdateNgramCount(String ngramId, String versionId, int count, Session session) throws HibernateException {
+        NGramCount ngramCount = null;
         Transaction transaction = null;
         try {
             transaction = session.beginTransaction();
-            ngramCount = new NgramCount(ngramId, versionId, count);
+            ngramCount = new NGramCount(ngramId, versionId, count);
             session.saveOrUpdate(ngramCount);
             transaction.commit();
         } catch (HibernateException e) {

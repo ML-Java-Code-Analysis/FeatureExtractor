@@ -5,6 +5,7 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.Average;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 public class LengthOfNamesFeatureGroup implements IFeatureGroup {
 
     @Override
-    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
 
         List<List<Integer>> variableLengths = new ArrayList<List<Integer>>();
         List<List<Integer>> methodLengths = new ArrayList<List<Integer>>();

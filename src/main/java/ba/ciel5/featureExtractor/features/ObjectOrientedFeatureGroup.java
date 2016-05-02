@@ -5,6 +5,7 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.ListUtil;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 public class ObjectOrientedFeatureGroup implements IFeatureGroup {
 
     @Override
-    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
 
         //if we have more than just one class in a file we save the features in a pair list for every class
         List<Integer> weightedMethodsPerClass = new ArrayList<Integer>();

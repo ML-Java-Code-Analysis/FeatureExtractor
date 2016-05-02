@@ -19,7 +19,7 @@ public class ObjectOrientedFeatureGroupTest {
         ObjectOrientedFeatureGroup feature = new ObjectOrientedFeatureGroup();
         char[] code = TestClass1.getTestCode().toCharArray();
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
-        Map<String, Double> result = feature.extract(null, ast, code);
+        Map<String, Double> result = feature.extract(null, null, ast, code);
 
         assertEquals(8.0, result.get("WMC"), 0.0);
         assertEquals(6.0, result.get("CBO"), 0.0);

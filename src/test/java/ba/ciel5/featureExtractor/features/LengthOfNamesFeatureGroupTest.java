@@ -19,7 +19,7 @@ public class LengthOfNamesFeatureGroupTest {
         LengthOfNamesFeatureGroup feature = new LengthOfNamesFeatureGroup();
         char[] code = TestClass1.getTestCode().toCharArray();
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
-        Map<String, Double> result = feature.extract(null, ast, code);
+        Map<String, Double> result = feature.extract(null, null, ast, code);
 
         assertEquals(1.0, result.get("MINVAR"), 0.0);
         assertEquals(9.0, result.get("MAXVAR"), 0.0);

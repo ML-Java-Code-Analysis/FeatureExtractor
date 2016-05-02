@@ -17,6 +17,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -66,6 +67,22 @@ public class FeatureValue implements Serializable {
 
     public void setValue(double value) {
         this.value = value;
+    }
+
+
+    /**
+     * Set the feature value for a version. If a value already exists, it will be updated.
+     *
+     * @param featureIds A list of the IDs of this IFeature type.
+     * @param versionIds A list of the UUIDs of the version this value belongs to.
+     * @param values     A list of the values this feature has for this version.
+     */
+    public static void addOrUpdateFeatureValueBulk(List<String> featureIds, List<String> versionIds, List<Double> values) {
+        Session session = HibernateUtil.openSession();
+        for ( int i=0; i<featureIds.size(); i++ ) {
+            addOrUpdateFeatureValue(featureIds.get(i), versionIds.get(i), values.get(i), session);
+        }
+        session.close();
     }
 
     /**

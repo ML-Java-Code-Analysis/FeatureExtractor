@@ -20,6 +20,15 @@
         <property name="hibernate.connection.password">
             root
         </property>
+        <property name="hibernate.default_batch_fetch_size">
+            2000
+        </property>
+        <property name="hibernate.jdbc.fetch_size">
+            2000
+        </property>
+        <property name="hibernate.jdbc.batch_size">
+            2000
+        </property>
         <mapping class="ba.ciel5.featureExtractor.model.Repository"/>
         <mapping class="ba.ciel5.featureExtractor.model.Version"/>
         <mapping class="ba.ciel5.featureExtractor.model.Commit"/>

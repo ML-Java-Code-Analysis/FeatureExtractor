@@ -1,5 +1,6 @@
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Issue;
 import ba.ciel5.featureExtractor.model.Version;
@@ -33,17 +34,19 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
     }
 
     @Override
-    public Map<String, Double> extract(Version version, CompilationUnit ast, char[] code) {
+    public Map<String, Double> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
 
         logger = Logger.getLogger("main");
 
         Map<String, Double> map = new HashMap<String, Double>();
         List<Integer> days = new ArrayList<Integer>(Arrays.asList(1, 7, 30, 90, 180, 365, 730));
 
-        Commit commit = HibernateUtil.fetchLazyContent(version.getCommit());
+        List<Commit> commitResult = commits.stream().filter( c ->
+                c.getId() !=  version.getCommitId()).collect(Collectors.toList());
+        Commit commit = commitResult.get(0);
 
         //Get all commits that are older than the actual commit
-        List<Commit> olderCommits = null;
+        /*List<Commit> olderCommits = null;
         try {
             olderCommits = HibernateUtil.complexQuery(
                     "SELECT commit " +
@@ -58,7 +61,8 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
                     )));
         } catch (HibernateError e) {
             logger.log(Level.SEVERE, "DB Query failed", e);
-        }
+        }*/
+        List<Commit> olderCommits = getAllOlderCommits(commit, getSortedCommitsByTimestamp(commits));
 
         map.put("DBLC", getDaysBetweenLastCommit(commit, olderCommits));
 
