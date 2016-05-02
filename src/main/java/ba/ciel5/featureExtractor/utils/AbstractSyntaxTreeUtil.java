@@ -26,6 +26,20 @@ public class AbstractSyntaxTreeUtil {
     }
 
     /**
+     * Get all imports
+     * @param ast code
+     * @return list of ImportDeclaration elements
+     */
+    public static List<ImportDeclaration> getImports(CompilationUnit ast)  {
+        List<ImportDeclaration> imports = new ArrayList<ImportDeclaration>();
+        for (Object importElement : ast.imports()) {
+            imports.add((ImportDeclaration) importElement);
+        }
+        return imports;
+    }
+
+
+    /**
      * Get all classes of ast code
      * @param ast javacode to search
      * @return List of classes
@@ -33,10 +47,34 @@ public class AbstractSyntaxTreeUtil {
      */
     public static List<TypeDeclaration> getClasses(CompilationUnit ast) throws ClassCastException {
         List<TypeDeclaration> classes = new ArrayList<TypeDeclaration>();
-        for (Object type : ast.types()) {
-            classes.add((TypeDeclaration) type);
-        }
+        for (Object type : ast.types())
+            if ( type instanceof TypeDeclaration )
+                classes.add((TypeDeclaration) type);
         return classes;
+    }
+
+    /**
+     * Get clases which a class extends
+     * @param typeDeclaration
+     * @return superClass
+     */
+    public static SimpleType getSuperClass(TypeDeclaration typeDeclaration) {
+        SimpleType superClass = (SimpleType) typeDeclaration.getSuperclassType();
+        return superClass;
+    }
+
+    /**
+     * Get interfaces which a class implements
+     * @param typeDeclaration
+     * @return List of interfaces
+     */
+    public static List<SimpleType> getSuperInterfaces(TypeDeclaration typeDeclaration) {
+        List<SimpleType> superClasses = new ArrayList<SimpleType>();
+        for ( Object superClass : typeDeclaration.superInterfaceTypes() ) {
+            if ( superClass instanceof SimpleType )
+                superClasses.add((SimpleType) superClass);
+        }
+        return superClasses;
     }
 
     /**
@@ -124,6 +162,20 @@ public class AbstractSyntaxTreeUtil {
         variableDeclarationFragements = filterASTTreeForNodeType(statements, 59);
 
         return variableDeclarationFragements;
+    }
+
+    /**
+     * Get all Modifiers of TypeDefclaration
+     * @param typeDeclaration
+     * @return List of modifiers
+     */
+    public static List<Modifier> getAllModifiers(TypeDeclaration typeDeclaration) {
+        List<Modifier> nodeModifiers = new ArrayList<Modifier>();
+        for ( Object m : typeDeclaration.modifiers() )
+            if ( m instanceof Modifier )
+                nodeModifiers.add((Modifier) m);
+
+        return nodeModifiers;
     }
 
     /**

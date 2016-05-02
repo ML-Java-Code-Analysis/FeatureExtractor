@@ -14,7 +14,10 @@ public class TestClass1 {
             "\n" +
             "import java.util.Arrays;\n" +
             "\n" +
-            "public class MyClass {\n" +
+            "interface test extends hope {\n" +
+            "   private void method()\n" +
+            "}\n"+
+            "public class MyClass implements test {\n" +
             "    // this is a single line comment\n" +
             "    private String name;\n" +
             "    private int id;\n" +
@@ -86,7 +89,7 @@ public class TestClass1 {
             "    public void func1() {\n" +
             "    }\n" +
             "}\n" +
-            "public class SecondClass { }\n" +
+            "public class SecondClass extends asdf { }\n" +
             "";
 
     public static String getTestCode() {

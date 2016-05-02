@@ -1,6 +1,5 @@
 package ba.ciel5.featureExtractor.features;
 
-import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Issue;
 import ba.ciel5.featureExtractor.model.Version;
@@ -11,7 +10,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.hibernate.HibernateError;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
