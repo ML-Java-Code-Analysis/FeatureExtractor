@@ -20,8 +20,7 @@ public class Issue {
     @Column(name = "type")
     private String type;
 
-    //@ManyToMany(fetch=FetchType.LAZY)
-    @ManyToMany(fetch=FetchType.EAGER, mappedBy = "issues")
+    @ManyToMany(fetch=FetchType.LAZY, mappedBy = "issues")
     private Collection<Commit> commits = new ArrayList<Commit>();
 
     /**
