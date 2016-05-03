@@ -1,3 +1,4 @@
 .idea/*
 FeatureExtractor.iml
 *.log
+*.cfg
