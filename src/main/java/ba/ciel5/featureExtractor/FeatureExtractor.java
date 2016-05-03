@@ -10,10 +10,14 @@ import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.*;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
+import com.google.common.collect.Lists;
 import javafx.util.Pair;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.hibernate.HibernateError;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.reflections.Reflections;
 import ba.ciel5.featureExtractor.repository.Git;
 import ba.ciel5.featureExtractor.utils.Config;
@@ -27,13 +31,13 @@ public class FeatureExtractor {
     private static Logger logger;
     private static Git git;
     private static int counter = 1;
+    private static Config cfg;
 
     public static void main(String[] args) {
         logger = Logger.getLogger("main");
         logger.log(Level.INFO, "Starting IFeature Extractor.");
 
         logger.log(Level.INFO, "Reading Arguments.");
-        Config cfg = null;
         try {
             cfg = new Config();
             cfg.parse(args);
@@ -69,11 +73,15 @@ public class FeatureExtractor {
             versions = HibernateUtil.complexQuery("SELECT version " +
                             "FROM Commit as c " +
                             "INNER JOIN c.versions AS version " +
+                            "INNER JOIN version.file AS file " +
                             "WHERE c.repositoryId = :repositoryId " +
+                            "AND file.language = :language " +
                             "AND version.deleted = FALSE"
                     , new ArrayList(
                             Arrays.asList(
-                                    new Pair("repositoryId", Integer.parseInt(repository.getId())))));
+                                    new Pair("repositoryId", Integer.parseInt(repository.getId())),
+                                    new Pair("language", "Java")
+                            )));
         } catch (HibernateError e) {
             logger.log(Level.SEVERE, "DB Query failed", e);
         }
@@ -107,7 +115,22 @@ public class FeatureExtractor {
             log_interval_temp = 100;
         final int log_interval = log_interval_temp;
 
-        versions.parallelStream().forEach(version -> processFeatures(commits, version, featureGroups, log_interval, size));
+        Lists.partition(versions, cfg.getPartitions()).parallelStream().forEach( p -> {
+            Session session = HibernateUtil.openSession();
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                p.stream().forEach(version ->
+                        processFeatures(commits, version, featureGroups, log_interval, size, session));
+                transaction.commit();
+            } catch (HibernateException e) {
+                if (transaction != null)
+                    transaction.rollback();
+                session.close();
+                throw new HibernateException(e.getMessage());
+            }
+            session.close();
+        });
 
         git.closeRepository();
         logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
@@ -146,13 +169,14 @@ public class FeatureExtractor {
         return reflections.getSubTypesOf(IFeatureGroup.class);
     }
 
-    private static void processFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size) {
+    private static void processFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size, Session session) {
         String path = version.getPath();
         String commitId = version.getCommitId();
 
         if (counter % log_interval == 0) {
             double prc = (double) counter / size * 100.0;
             logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - processed versions: " + counter);
+
         }
         counter++;
 
@@ -161,26 +185,20 @@ public class FeatureExtractor {
             CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
             for (IFeatureGroup featureGroup : featureGroups) {
                 Map<String, Double> features = featureGroup.extract(commits, version, ast, code);
-                List<String> featureIds = new ArrayList<String>();
-                List<String> versionIds = new ArrayList<String>();
-                List<Double> values = new ArrayList<Double>();
                 Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
                 while (it.hasNext()) {
                     Map.Entry<String, Double> feature = it.next();
                     String featureId = feature.getKey();
                     Double value = feature.getValue();
                     it.remove(); // avoids a ConcurrentModificationException
-                    featureIds.add(featureId);
-                    versionIds.add(version.getId());
-                    values.add(value);
-                }
-                try {
-                    if ( featureGroup.getClass().getSimpleName().equals("NGramFeatureGroup") )
-                        NGramCount.addOrUpdateFeatureValueBulk(featureIds, versionIds, values);
-                    else
-                        FeatureValue.addOrUpdateFeatureValueBulk(featureIds, versionIds, values);
-                } catch (HibernateError e) {
-                    logger.log(Level.SEVERE, "Could not add Features: " + featureIds + " with values: " + values, e);
+                    try {
+                        if ( featureGroup.getClass().getSimpleName().equals("NGramFeatureGroup") )
+                            NGramCount.addOrUpdateNgramCount(featureId, version.getId(), value.intValue(), session);
+                        else
+                            FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value, session);
+                    } catch (HibernateError e) {
+                        logger.log(Level.SEVERE, "Could not add Features: " + featureId + " with values: " + value, e);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -188,5 +206,9 @@ public class FeatureExtractor {
                     " from commit " + commitId + ". Skipping this one.";
             logger.log(Level.WARNING, msg, e);
         }
+    }
+
+    public static Config getCfg() {
+        return cfg;
     }
 }

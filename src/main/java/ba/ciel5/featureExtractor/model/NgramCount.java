@@ -8,6 +8,7 @@ package ba.ciel5.featureExtractor.model;
 
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -67,20 +68,6 @@ public class NGramCount implements Serializable {
         this.count = count;
     }
 
-    /**
-     * Set the ngram count for a version. If a value already exists, it will be updated.
-     *
-     * @param ngramIds   A list of the Strings representation of this ngram.
-     * @param versionIds A list of the UUIDs of the version this value belongs to.
-     * @param values     A list of the values this feature has for this version.
-     */
-    public static void addOrUpdateFeatureValueBulk(List<String> ngramIds, List<String> versionIds, List<Double> values) {
-        Session session = HibernateUtil.openSession();
-        for ( int i=0; i<ngramIds.size(); i++ ) {
-            addOrUpdateNgramCount(ngramIds.get(i), versionIds.get(i), values.get(i).intValue(), session);
-        }
-        session.close();
-    }
 
     /**
      * Set the ngram count for a version. If a value already exists, it will be updated.
@@ -92,7 +79,18 @@ public class NGramCount implements Serializable {
      */
     public static NGramCount addOrUpdateNgramCount(String ngramId, String versionId, int count) {
         Session session = HibernateUtil.openSession();
-        NGramCount ngramCount = addOrUpdateNgramCount(ngramId, versionId, count, session);
+        NGramCount ngramCount = null;
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+            ngramCount = addOrUpdateNgramCount(ngramId, versionId, count);
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null)
+                transaction.rollback();
+            session.close();
+            throw new HibernateException(e.getMessage());
+        }
         session.close();
         return ngramCount;
     }
@@ -107,20 +105,23 @@ public class NGramCount implements Serializable {
      * @return The FeatureValue object which was subject to the change.
      */
     public static NGramCount addOrUpdateNgramCount(String ngramId, String versionId, int count, Session session) throws HibernateException {
-        NGramCount ngramCount = null;
-        Transaction transaction = null;
-        try {
-            transaction = session.beginTransaction();
-            ngramCount = new NGramCount(ngramId, versionId, count);
-            session.saveOrUpdate(ngramCount);
-            transaction.commit();
-        } catch (HibernateException e) {
-            if (transaction != null)
-                transaction.rollback();
-            session.close();
-            throw new HibernateException(e.getMessage());
-        }
+        NGramCount ngramCount = new NGramCount(ngramId, versionId, count);
+        session.saveOrUpdate(ngramCount);
         return ngramCount;
     }
 
+    /**
+     * Delete all entries in the SQL table
+     */
+    public static void turncate() {
+        String hql = String.format("delete from ngram_count");
+        Session session = HibernateUtil.openSession();
+        try {
+            Query query = session.createQuery(hql);
+        } catch (HibernateException e) {
+            session.close();
+            throw new HibernateException(e.getMessage());
+        }
+        session.close();
+    }
 }

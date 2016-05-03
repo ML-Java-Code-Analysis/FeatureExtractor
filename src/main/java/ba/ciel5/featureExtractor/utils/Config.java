@@ -15,8 +15,11 @@ public class Config {
 
     //Config Options
     private static final String REPOSITORYSECTION = "REPOSITORY";
+    private static final String DEFAULTSECTION = "DEFAULT";
 
     private String repositoryName;
+    private Integer partitions;
+    private Integer maxNgramSize;
 
     //CLI Options
     private String configFile = null;
@@ -55,6 +58,15 @@ public class Config {
     public void readConfigFile() throws IOException {
         Wini iniFileParser = new Wini(new File(configFile));
         repositoryName = iniFileParser.get(REPOSITORYSECTION, "name", String.class);
+        partitions = iniFileParser.get(DEFAULTSECTION, "partitions", Integer.class);
+        maxNgramSize = iniFileParser.get(DEFAULTSECTION, "maxNgramSize", Integer.class);
+
+        if ( repositoryName == null )
+            throw new IOException("Repository name not found in config");
+        if ( partitions == null )
+            partitions=250;
+        if ( maxNgramSize == null )
+            maxNgramSize=5;
     }
 
     public String getConfigFile() {
@@ -63,5 +75,13 @@ public class Config {
 
     public String getRepositoryName() {
         return repositoryName;
+    }
+
+    public Integer getPartitions() {
+        return partitions;
+    }
+
+    public Integer getMaxNgramSize() {
+        return maxNgramSize;
     }
 }

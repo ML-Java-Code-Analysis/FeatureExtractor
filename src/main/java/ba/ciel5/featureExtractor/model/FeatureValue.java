@@ -69,22 +69,6 @@ public class FeatureValue implements Serializable {
         this.value = value;
     }
 
-
-    /**
-     * Set the feature value for a version. If a value already exists, it will be updated.
-     *
-     * @param featureIds A list of the IDs of this IFeature type.
-     * @param versionIds A list of the UUIDs of the version this value belongs to.
-     * @param values     A list of the values this feature has for this version.
-     */
-    public static void addOrUpdateFeatureValueBulk(List<String> featureIds, List<String> versionIds, List<Double> values) {
-        Session session = HibernateUtil.openSession();
-        for ( int i=0; i<featureIds.size(); i++ ) {
-            addOrUpdateFeatureValue(featureIds.get(i), versionIds.get(i), values.get(i), session);
-        }
-        session.close();
-    }
-
     /**
      * Set the feature value for a version. If a value already exists, it will be updated.
      *
@@ -95,7 +79,18 @@ public class FeatureValue implements Serializable {
      */
     public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value) {
         Session session = HibernateUtil.openSession();
-        FeatureValue featureValue = addOrUpdateFeatureValue(featureId, versionId, value, session);
+        Transaction transaction = null;
+        FeatureValue featureValue = null;
+        try {
+            transaction = session.beginTransaction();
+            featureValue = addOrUpdateFeatureValue(featureId, versionId, value);
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null)
+                transaction.rollback();
+            session.close();
+            throw new HibernateException(e.getMessage());
+        }
         session.close();
         return featureValue;
     }
@@ -110,19 +105,8 @@ public class FeatureValue implements Serializable {
      * @return The FeatureValue object which was subject to the change.
      */
     public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value, Session session) throws HibernateException {
-        FeatureValue featureValue = null;
-        Transaction transaction = null;
-        try {
-            transaction = session.beginTransaction();
-            featureValue = new FeatureValue(featureId, versionId, value);
-            session.saveOrUpdate(featureValue);
-            transaction.commit();
-        } catch (HibernateException e) {
-            if (transaction != null)
-                transaction.rollback();
-            session.close();
-            throw new HibernateException(e.getMessage());
-        }
+        FeatureValue featureValue = new FeatureValue(featureId, versionId, value);
+        session.saveOrUpdate(featureValue);
         return featureValue;
     }
 
@@ -153,5 +137,19 @@ public class FeatureValue implements Serializable {
             return (FeatureValue) result.get(0);
         }
         return null;
+    }
+    /**
+     * Delete all entries in the SQL table
+     */
+    public static void turncate() {
+        String hql = String.format("delete from ngram_count");
+        Session session = HibernateUtil.openSession();
+        try {
+            Query query = session.createQuery(hql);
+        } catch (HibernateException e) {
+            session.close();
+            throw new HibernateException(e.getMessage());
+        }
+        session.close();
     }
 }

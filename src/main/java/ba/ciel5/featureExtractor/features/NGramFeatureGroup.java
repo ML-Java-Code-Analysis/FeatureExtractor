@@ -3,6 +3,7 @@
  */
 package ba.ciel5.featureExtractor.features;
 
+import ba.ciel5.featureExtractor.FeatureExtractor;
 import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
@@ -33,7 +34,7 @@ public class NGramFeatureGroup implements IFeatureGroup {
             }
         };
         ast.accept(visitor);
-        List<String> ngrams = generateNgramsUpto(flatCode,10);
+        List<String> ngrams = generateNgramsUpto(flatCode, FeatureExtractor.getCfg().getMaxNgramSize());
         for ( String ngram : ngrams ) {
             Double value=1.0;
             if ( map.containsKey(ngram) )
