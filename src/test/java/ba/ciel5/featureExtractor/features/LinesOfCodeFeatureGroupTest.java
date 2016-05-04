@@ -21,8 +21,8 @@ public class LinesOfCodeFeatureGroupTest {
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
         Map<String, Double> result = feature.extract(null, null, ast, code);
 
-        assertEquals(80.0, result.get("PLOC"), 0.0);
-        assertEquals(55.0, result.get("SLOC"), 0.0);
+        assertEquals(83.0, result.get("PLOC"), 0.0);
+        assertEquals(58.0, result.get("SLOC"), 0.0);
         assertEquals(13.0, result.get("BLOC"), 0.0);
         assertEquals(13.0, result.get("CLOC"), 0.0);
         assertEquals(0.0, result.get("MINLINE"), 0.0);

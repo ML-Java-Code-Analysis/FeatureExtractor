@@ -29,8 +29,8 @@ public class LengthOfNamesFeatureGroupTest {
         assertEquals(9.0, result.get("MAXMET"), 0.0);
         assertEquals(7.0, result.get("MEDMET"), 0.0);
 
-        assertEquals(7.0, result.get("MINCLS"), 0.0);
+        assertEquals(4.0, result.get("MINCLS"), 0.0);
         assertEquals(11.0, result.get("MAXCLS"), 0.0);
-        assertEquals(9.0, result.get("MEDCLS"), 0.0);
+        assertEquals(7.0, result.get("MEDCLS"), 0.0);
     }
 }
