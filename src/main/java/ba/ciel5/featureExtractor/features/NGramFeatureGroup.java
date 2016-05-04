@@ -34,7 +34,13 @@ public class NGramFeatureGroup implements IFeatureGroup {
             }
         };
         ast.accept(visitor);
-        List<String> ngrams = generateNgramsUpto(flatCode, FeatureExtractor.getCfg().getMaxNgramSize());
+        Integer maxNGramSize = 5;
+        if ( FeatureExtractor.getCfg() == null )
+            maxNGramSize = 5;
+        else
+            FeatureExtractor.getCfg().getMaxNgramSize();
+
+        List<String> ngrams = generateNgramsUpto(flatCode, maxNGramSize);
         for ( String ngram : ngrams ) {
             Double value=1.0;
             if ( map.containsKey(ngram) )
