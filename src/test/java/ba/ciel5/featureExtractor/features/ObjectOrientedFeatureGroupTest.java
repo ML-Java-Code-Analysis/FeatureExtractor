@@ -21,9 +21,9 @@ public class ObjectOrientedFeatureGroupTest {
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
         Map<String, Double> result = feature.extract(null, null, ast, code);
 
-        assertEquals(8.0, result.get("WMC"), 0.0);
+        assertEquals(9.0, result.get("WMC"), 0.0);
         assertEquals(6.0, result.get("CBO"), 0.0);
-        assertEquals(14.0, result.get("RFC"), 0.0);
+        assertEquals(15.0, result.get("RFC"), 0.0);
         assertEquals(1.0, result.get("LCOM"), 0.0);
         assertEquals(7.0, result.get("NPM"), 0.0);
         assertEquals(0.0, result.get("NPV"), 0.0);
