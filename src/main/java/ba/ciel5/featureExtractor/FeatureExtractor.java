@@ -115,7 +115,9 @@ public class FeatureExtractor {
             log_interval_temp = 100;
         final int log_interval = log_interval_temp;
 
-        Lists.partition(versions, cfg.getPartitions()).parallelStream().forEach( p -> {
+        Integer partitionSize = cfg.getPartitions();
+
+        Lists.partition(versions, partitionSize).parallelStream().forEach( p -> {
             Session session = HibernateUtil.openSession();
             Transaction transaction = null;
             try {
@@ -192,8 +194,16 @@ public class FeatureExtractor {
                     Double value = feature.getValue();
                     it.remove(); // avoids a ConcurrentModificationException
                     try {
-                        if ( featureGroup.getClass().getSimpleName().equals("NGramFeatureGroup") )
-                            NGramCount.addOrUpdateNgramCount(featureId, version.getId(), value.intValue(), session);
+                        //special handling for NGram feature group
+                        if ( featureGroup.getClass().getSimpleName().equals("NGramFeatureGroup") ) {
+                            String cuttedFeatureId = featureId;
+                            if ( featureId.length() >= cfg.getMaxNGramFieldSize() ) {
+                                cuttedFeatureId = featureId.substring(0, cfg.getMaxNGramFieldSize()-1);
+                                System.out.println(featureId);
+                            }
+                            NGramCount.addOrUpdateNgramCount(cuttedFeatureId, version.getId(), value.intValue(), session);
+
+                        }
                         else
                             FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value, session);
                     } catch (HibernateError e) {

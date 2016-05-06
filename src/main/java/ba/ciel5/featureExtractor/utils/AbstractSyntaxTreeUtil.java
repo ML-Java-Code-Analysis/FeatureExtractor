@@ -58,8 +58,8 @@ public class AbstractSyntaxTreeUtil {
      * @param typeDeclaration
      * @return superClass
      */
-    public static SimpleType getSuperClass(TypeDeclaration typeDeclaration) {
-        SimpleType superClass = (SimpleType) typeDeclaration.getSuperclassType();
+    public static <T> T getSuperClass(TypeDeclaration typeDeclaration) {
+        T superClass = (T) typeDeclaration.getSuperclassType();
         return superClass;
     }
 

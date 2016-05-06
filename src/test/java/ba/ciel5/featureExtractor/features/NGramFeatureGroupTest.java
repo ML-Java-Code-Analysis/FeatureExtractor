@@ -18,7 +18,7 @@ public class NGramFeatureGroupTest {
         CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
         Map<String, Double> result = feature.extract(null, null, ast, code);
 
-        assertEquals(13.0, result.get("ExpressionStatement"), 0.0);
+        assertEquals(26.0, result.get("ExpressionStatement"), 0.0);
         assertEquals(21.0, result.get("FieldAccess"), 0.0);
         assertEquals(19.0, result.get("FieldAccess-ThisExpression"), 0.0);
         assertEquals(11.0, result.get("ThisExpression-SimpleName-SimpleName"), 0.0);

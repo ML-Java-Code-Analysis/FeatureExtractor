@@ -9,6 +9,7 @@ import java.io.IOException;
 /**
  * Created on 05.04.2016.
  * Reads config file for FeatureExtractor
+ *
  * @author tobias.meier
  */
 public class Config {
@@ -19,7 +20,8 @@ public class Config {
 
     private String repositoryName;
     private Integer partitions;
-    private Integer maxNgramSize;
+    private Integer maxNGramSize;
+    private Integer maxNGramFieldSize;
 
     //CLI Options
     private String configFile = null;
@@ -59,14 +61,17 @@ public class Config {
         Wini iniFileParser = new Wini(new File(configFile));
         repositoryName = iniFileParser.get(REPOSITORYSECTION, "name", String.class);
         partitions = iniFileParser.get(DEFAULTSECTION, "partitions", Integer.class);
-        maxNgramSize = iniFileParser.get(DEFAULTSECTION, "maxNgramSize", Integer.class);
+        maxNGramSize = iniFileParser.get(DEFAULTSECTION, "maxNGramSize", Integer.class);
+        maxNGramFieldSize = iniFileParser.get(DEFAULTSECTION, "maxNGramFieldSize", Integer.class);
 
-        if ( repositoryName == null )
+        if (repositoryName == null)
             throw new IOException("Repository name not found in config");
-        if ( partitions == null )
-            partitions=250;
-        if ( maxNgramSize == null )
-            maxNgramSize=5;
+        if (partitions == null)
+            partitions = 250;
+        if (maxNGramSize == null)
+            maxNGramSize = 5;
+        if (maxNGramFieldSize == null)
+            maxNGramFieldSize = 500;
     }
 
     public String getConfigFile() {
@@ -81,7 +86,11 @@ public class Config {
         return partitions;
     }
 
-    public Integer getMaxNgramSize() {
-        return maxNgramSize;
+    public Integer getMaxNGramSize() {
+        return maxNGramSize;
+    }
+
+    public Integer getMaxNGramFieldSize() {
+        return maxNGramFieldSize;
     }
 }

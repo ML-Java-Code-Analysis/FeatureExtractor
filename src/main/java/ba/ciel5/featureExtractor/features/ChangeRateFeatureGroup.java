@@ -42,37 +42,21 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         List<Integer> days = new ArrayList<Integer>(Arrays.asList(1, 7, 30, 90, 180, 365, 730));
 
         List<Commit> commitResult = commits.stream().filter( c ->
-                c.getId() !=  version.getCommitId()).collect(Collectors.toList());
+                c.getId().equals(version.getCommitId())
+        ).collect(Collectors.toList());
         Commit commit = commitResult.get(0);
 
-        //Get all commits that are older than the actual commit
-        /*List<Commit> olderCommits = null;
-        try {
-            olderCommits = HibernateUtil.complexQuery(
-                    "SELECT commit " +
-                            "FROM Version as version " +
-                            "INNER JOIN version.commit as commit " +
-                            "WHERE version.fileId = :fileId " +
-                            "AND commit.timestamp < :timestamp " +
-                            "ORDER BY commit.timestamp ASC",
-                    new ArrayList(Arrays.asList(
-                            new Pair("fileId", version.getFileId()),
-                            new Pair("timestamp", commit.getTimestamp())
-                    )));
-        } catch (HibernateError e) {
-            logger.log(Level.SEVERE, "DB Query failed", e);
-        }*/
         List<Commit> olderCommits = getAllOlderCommits(commit, getSortedCommitsByTimestamp(commits));
 
         map.put("DBLC", getDaysBetweenLastCommit(commit, olderCommits));
 
         // process every feature for at list all days in day array
-        for (int day : days) {
-            map.put("NOAL" + days.toString() + "D", getNumberOfAddedLinesForDays(day, commit, olderCommits));
-            map.put("NODL" + days.toString() + "D", getNumberOfDeletedLinesForDays(day, commit, olderCommits));
-            map.put("NOA" + days.toString() + "D", getNumberOfAuthorsForDays(day, commit, olderCommits));
-            map.put("NOB" + days.toString() + "D", getNumberOfIssuesForDays(day, commit, olderCommits, IssueType.BUG.toString()));
-            map.put("NOE" + days.toString() + "D", getNumberOfIssuesForDays(day, commit, olderCommits, IssueType.ENHANCEMENT.toString()));
+        for (Integer day : days) {
+            map.put("NOAL" + day.toString() + "D", getNumberOfAddedLinesForDays(day, commit, olderCommits));
+            map.put("NODL" + day.toString() + "D", getNumberOfDeletedLinesForDays(day, commit, olderCommits));
+            map.put("NOA" + day.toString() + "D", getNumberOfAuthorsForDays(day, commit, olderCommits));
+            map.put("NOB" + day.toString() + "D", getNumberOfIssuesForDays(day, commit, olderCommits, IssueType.BUG.toString()));
+            map.put("NOE" + day.toString() + "D", getNumberOfIssuesForDays(day, commit, olderCommits, IssueType.ENHANCEMENT.toString()));
             putMinMaxMedMeanToMap(map, getDaysBetweenOlderCommits(day, commit, olderCommits), "DBOC", day);
 
             //do for every file change type
@@ -82,7 +66,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             );
             Stream.of(FileChangeType.values()).forEach(
                     t -> numberOfFiles.get(t.toString()).forEach(
-                            cs -> map.put("NO" + t.toString().charAt(0) + "F" + days.toString() + "D", cs)
+                            cs -> map.put("NO" + t.toString().charAt(0) + "F" + day.toString() + "D", cs)
                     )
             );
         }
