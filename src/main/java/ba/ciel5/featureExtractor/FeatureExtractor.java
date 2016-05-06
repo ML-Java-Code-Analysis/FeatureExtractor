@@ -8,6 +8,7 @@ package ba.ciel5.featureExtractor;
 
 import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.*;
+import ba.ciel5.featureExtractor.ngramfeatures.NGramFeatureGroup;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import com.google.common.collect.Lists;
@@ -32,6 +33,7 @@ public class FeatureExtractor {
     private static Git git;
     private static int counter = 1;
     private static Config cfg;
+    private static Map<Version,Map<String,Integer>> versionNGram = new HashMap<Version,Map<String,Integer>>();
 
     public static void main(String[] args) {
         logger = Logger.getLogger("main");
@@ -123,7 +125,7 @@ public class FeatureExtractor {
             try {
                 transaction = session.beginTransaction();
                 p.stream().forEach(version ->
-                        processFeatures(commits, version, featureGroups, log_interval, size, session));
+                        processAllFeatures(commits, version, featureGroups, log_interval, size, session));
                 transaction.commit();
             } catch (HibernateException e) {
                 if (transaction != null)
@@ -131,8 +133,16 @@ public class FeatureExtractor {
                 session.close();
                 throw new HibernateException(e.getMessage());
             }
+//            for (String ngram : nGramsList) {
+//                Integer value = 1;
+//                if (nGrams.containsKey(ngram))
+//                    value = nGrams.get(ngram) + 1;
+//                nGrams.put(ngram, value);
+//            }
             session.close();
         });
+
+
 
         git.closeRepository();
         logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
@@ -171,9 +181,10 @@ public class FeatureExtractor {
         return reflections.getSubTypesOf(IFeatureGroup.class);
     }
 
-    private static void processFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size, Session session) {
+    private static void processAllFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size, Session session) {
         String path = version.getPath();
         String commitId = version.getCommitId();
+        List<String> nGrams = null;
 
         if (counter % log_interval == 0) {
             double prc = (double) counter / size * 100.0;
@@ -185,37 +196,38 @@ public class FeatureExtractor {
         try {
             char[] code = git.getSourceCode(path, commitId);
             CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
-            for (IFeatureGroup featureGroup : featureGroups) {
-                Map<String, Double> features = featureGroup.extract(commits, version, ast, code);
-                Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, Double> feature = it.next();
-                    String featureId = feature.getKey();
-                    Double value = feature.getValue();
-                    it.remove(); // avoids a ConcurrentModificationException
-                    try {
-                        //special handling for NGram feature group
-                        if ( featureGroup.getClass().getSimpleName().equals("NGramFeatureGroup") ) {
-                            String cuttedFeatureId = featureId;
-                            if ( featureId.length() >= cfg.getMaxNGramFieldSize() ) {
-                                cuttedFeatureId = featureId.substring(0, cfg.getMaxNGramFieldSize()-1);
-                                System.out.println(featureId);
-                            }
-                            NGramCount.addOrUpdateNgramCount(cuttedFeatureId, version.getId(), value.intValue(), session);
-
-                        }
-                        else
-                            FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value, session);
-                    } catch (HibernateError e) {
-                        logger.log(Level.SEVERE, "Could not add Features: " + featureId + " with values: " + value, e);
-                    }
-                }
-            }
+            processFeatures(commits, version, featureGroups, ast, code, session);
+            versionNGram.put(version, processNGrams(commits, version, ast, code));
         } catch (IOException e) {
             String msg = "There was a problem with the file " + path +
                     " from commit " + commitId + ". Skipping this one.";
             logger.log(Level.WARNING, msg, e);
         }
+    }
+
+    private static void processFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, CompilationUnit ast, char[] code, Session session) {
+        for (IFeatureGroup featureGroup : featureGroups) {
+            Map<String, Double> features = featureGroup.extract(commits, version, ast, code);
+            Iterator<Map.Entry<String, Double>> it = features.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Double> feature = it.next();
+                String featureId = feature.getKey();
+                Double value = feature.getValue();
+                it.remove(); // avoids a ConcurrentModificationException
+                try {
+                    FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value, session);
+                } catch (HibernateError e) {
+                    logger.log(Level.SEVERE, "Could not add Features: " + featureId + " with values: " + value, e);
+                }
+            }
+        }
+    }
+
+    private static Map<String,Integer> processNGrams(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
+        Map<String,Integer> nGrams = null;
+        NGramFeatureGroup nGramFeatureGroup = new NGramFeatureGroup();
+        //nGrams = nGramFeatureGroup.extract(commits, version, ast, code);
+        return nGrams;
     }
 
     public static Config getCfg() {
