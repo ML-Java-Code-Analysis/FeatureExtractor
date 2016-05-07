@@ -4,10 +4,10 @@
 package ba.ciel5.featureExtractor.ngramfeatures;
 
 import ba.ciel5.featureExtractor.FeatureExtractor;
-import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -42,8 +42,9 @@ public class NGramFeatureGroup {
     private final char ONEGRAMDELIMITER = '-';
 
 
-    public Map<String, Integer> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
-        Map<String, Integer> map = new HashMap<String, Integer>();
+    public Map<Integer,Map<Integer,Map<String, Integer>>> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
+        // Map nGram Level (statement, methods, ..) --> nGram Size (1gram, 2gram) --> nGram, how often it appears
+        Map<Integer,Map<Integer,Map<String, Integer>>>  map = new HashMap<Integer,Map<Integer,Map<String, Integer>>> ();
         List<String> all = new ArrayList<String>();
         List<String> statements = new ArrayList<String>();
 
@@ -183,22 +184,19 @@ public class NGramFeatureGroup {
         ast.accept(visitor);
 
         Integer maxNGramSize = 5;
-        if (FeatureExtractor.getCfg() == null)
-            maxNGramSize = 5;
-        else
+        if (FeatureExtractor.getCfg() != null)
             FeatureExtractor.getCfg().getMaxNGramSize();
 
-        List<String> ngrams = generateNgramsUpto(all, maxNGramSize);
-        ngrams.addAll(generateNgramsUpto(statements, maxNGramSize));
-        ngrams.addAll(generateNgramsUpto(controlStructures, maxNGramSize));
-        ngrams.addAll(generateNgramsUpto(classesAndMethods, maxNGramSize));
-        for (String ngram : ngrams) {
-            Integer value = 1;
-            if (map.containsKey(ngram))
-                value = map.get(ngram) + 1;
+        //for every nGram level put it to the map
+        List<String> allCodeNGrams = generateNgramsUpto(all, maxNGramSize);
+        putNGramListsToMap(map,allCodeNGrams,1);
+        List<String> allStatementsNGrams = generateNgramsUpto(statements, maxNGramSize);
+        putNGramListsToMap(map,allStatementsNGrams,2);
+        List<String> allControlStructuresNGrams = generateNgramsUpto(controlStructures, maxNGramSize);
+        putNGramListsToMap(map,allControlStructuresNGrams,3);
+        List<String> allClassesAndMethodsNGrams = generateNgramsUpto(classesAndMethods, maxNGramSize);
+        putNGramListsToMap(map,allClassesAndMethodsNGrams,4);
 
-            map.put(ngram, value);
-        }
         return map;
     }
 
@@ -268,45 +266,45 @@ public class NGramFeatureGroup {
     private String generateControlStatementString(ASTNode node) {
         StringBuffer controlStatementString = new StringBuffer();
 
-        controlStatementString.append(String.valueOf(node.getNodeType()) + ONEGRAMDELIMITER);
+        controlStatementString.append(String.valueOf(node.getNodeType()));
 
         if (node.getNodeType() == ASTNode.CATCH_CLAUSE) {
             Integer statementSize = ((CatchClause) node).getBody().statements().size();
             if (statementSize > COMPLEXTHRESHOLD)
-                controlStatementString.append(COMPLEX);
+                controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
             else
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
         } else if (node.getNodeType() == ASTNode.DO_STATEMENT) {
             if (((DoStatement) node).getBody().getNodeType() == ASTNode.EXPRESSION_STATEMENT)
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             else if (((DoStatement) node).getBody().getNodeType() == ASTNode.BLOCK) {
                 Integer statementSize = ((Block) ((DoStatement) node).getBody()).statements().size();
                 if (statementSize > COMPLEXTHRESHOLD)
-                    controlStatementString.append(COMPLEX);
+                    controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
                 else
-                    controlStatementString.append(SIMPLE);
+                    controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             }
         } else if (node.getNodeType() == ASTNode.FOR_STATEMENT) {
             if (((ForStatement) node).getBody().getNodeType() == ASTNode.EXPRESSION_STATEMENT)
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             else if (((ForStatement) node).getBody().getNodeType() == ASTNode.BLOCK) {
                 Integer statementSize = ((Block) ((ForStatement) node).getBody()).statements().size();
                 if (statementSize > COMPLEXTHRESHOLD)
-                    controlStatementString.append(COMPLEX);
+                    controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
                 else
-                    controlStatementString.append(SIMPLE);
+                    controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             }
         } else if (node.getNodeType() == ASTNode.IF_STATEMENT) {
             if (((IfStatement) node).getThenStatement().getNodeType() == ASTNode.EXPRESSION_STATEMENT) {
                 if (((IfStatement) node).getElseStatement() != null) {
                     if (((IfStatement) node).getElseStatement().getNodeType() == ASTNode.EXPRESSION_STATEMENT)
-                        controlStatementString.append(SIMPLE);
+                        controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
                     else if (((IfStatement) node).getElseStatement().getNodeType() == ASTNode.BLOCK) {
                         Integer statementElseSize = ((Block) ((IfStatement) node).getElseStatement()).statements().size();
                         if (statementElseSize > COMPLEXTHRESHOLD)
-                            controlStatementString.append(COMPLEX);
+                            controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
                         else
-                            controlStatementString.append(SIMPLE);
+                            controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
                     }
                 }
             } else if (((IfStatement) node).getThenStatement().getNodeType() == ASTNode.BLOCK) {
@@ -319,37 +317,37 @@ public class NGramFeatureGroup {
                         statementElseSize = ((Block) ((IfStatement) node).getElseStatement()).statements().size();
                 }
                 if ((statementThenSize + statementElseSize) > COMPLEXTHRESHOLD)
-                    controlStatementString.append(COMPLEX);
+                    controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
                 else
-                    controlStatementString.append(SIMPLE);
+                    controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             }
         } else if (node.getNodeType() == ASTNode.SWITCH_STATEMENT) {
             Integer statementSize = ((SwitchStatement) node).statements().size();
             if (statementSize > COMPLEXTHRESHOLD)
-                controlStatementString.append(COMPLEX);
+                controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
             else
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
         } else if (node.getNodeType() == ASTNode.SYNCHRONIZED_STATEMENT) {
             Integer statementSize = ((SynchronizedStatement) node).getBody().statements().size();
             if (statementSize > COMPLEXTHRESHOLD)
-                controlStatementString.append(COMPLEX);
+                controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
             else
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
         } else if (node.getNodeType() == ASTNode.TRY_STATEMENT) {
             Integer statementSize = ((TryStatement) node).getBody().statements().size();
             if (statementSize > COMPLEXTHRESHOLD)
-                controlStatementString.append(COMPLEX);
+                controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
             else
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
         } else if (node.getNodeType() == ASTNode.WHILE_STATEMENT) {
             if (((WhileStatement) node).getBody().getNodeType() == ASTNode.EXPRESSION_STATEMENT)
-                controlStatementString.append(SIMPLE);
+                controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             else if (((WhileStatement) node).getBody().getNodeType() == ASTNode.BLOCK)  {
                 Integer statementSize = ((Block) ((WhileStatement) node).getBody()).statements().size();
                 if (statementSize > COMPLEXTHRESHOLD)
-                    controlStatementString.append(COMPLEX);
+                    controlStatementString.append(ONEGRAMDELIMITER + COMPLEX);
                 else
-                    controlStatementString.append(SIMPLE);
+                    controlStatementString.append(ONEGRAMDELIMITER + SIMPLE);
             }
         }
         return controlStatementString.toString();
@@ -433,5 +431,47 @@ public class NGramFeatureGroup {
             methodString.append(ONEGRAMDELIMITER + SMALL);
 
         return methodString.toString();
+    }
+
+    /**
+     * Count how often a character appeas in the string
+     * @param haystack string
+     * @param needle character to search
+     * @return how often does it appear
+     */
+    private int countOccurrences(String haystack, char needle)
+    {
+        int count = 0;
+        for (int i=0; i < haystack.length(); i++)
+        {
+            if (haystack.charAt(i) == needle)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Put the generates nGram in a map structure:
+     * level --> nGramSize --> nGram, occurence
+     * @param map the map to fill
+     * @param ngrams a list of nGrams
+     * @param level the level
+     */
+    private void putNGramListsToMap(Map<Integer,Map<Integer,Map<String, Integer>>>  map, List<String> ngrams, int level) {
+        map.put(level,new HashMap<Integer,Map<String, Integer>>());
+
+        ngrams.forEach( n -> {
+            int nGramSize = 1+countOccurrences(n,NGRAMDELIMITER);
+            if ( map.get(level).get(nGramSize) == null )
+                map.get(level).put(nGramSize,new HashMap<String,Integer>());
+            else {
+                int occurrence = 1;
+                if ( map.get(level).get(nGramSize).containsKey(n) )
+                    occurrence = map.get(level).get(nGramSize).get(n) + 1;
+                map.get(level).get(nGramSize).put(n, occurrence);
+            }
+        });
     }
 }

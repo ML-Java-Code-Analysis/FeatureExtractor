@@ -71,12 +71,13 @@ public class FeatureValue implements Serializable {
 
     /**
      * Set the feature value for a version. If a value already exists, it will be updated.
-     *
+     * ATTENTION: This method has a bug
      * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param value     The value this feature has for this version.
      * @return The FeatureValue object which was subject to the change.
      */
+    @Deprecated
     public static FeatureValue addOrUpdateFeatureValue(String featureId, String versionId, double value) {
         Session session = HibernateUtil.openSession();
         Transaction transaction = null;

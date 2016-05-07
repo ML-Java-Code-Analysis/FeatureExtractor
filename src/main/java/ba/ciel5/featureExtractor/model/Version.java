@@ -51,6 +51,10 @@ public class Version {
 
     }
 
+    public Version(String id) {
+        this.id = id;
+    }
+
     public String getId() {
         return id;
     }

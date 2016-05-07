@@ -8,7 +8,6 @@ package ba.ciel5.featureExtractor.model;
 
 import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -23,18 +22,22 @@ import java.io.Serializable;
 public class NGramVector implements Serializable {
 
     @Id
-    @Column(name = "size")
-    private Integer size;
-
-    @Id
     @Column(name = "version_id")
     private String versionId;
 
-    @Column(name = "level")
-    private Integer level;
+    @Id
+    @Column(name = "ngram_size")
+    private Integer nGramSize;
 
-    @Column(name = "values")
-    private String values;
+    @Id
+    @Column(name = "ngram_level")
+    private Integer nGramLevel;
+
+    @Column(name = "vector_size")
+    private Integer vectorSize;
+
+    @Column(name = "ngram_values")
+    private String nGramValues;
 
     /**
      * Default constructor Hibernate ORM. Do not use this constructor.
@@ -44,60 +47,63 @@ public class NGramVector implements Serializable {
     }
 
 
-    public NGramVector(Integer size, String versionId, Integer level, String values) {
-        this.size = size;
+    public NGramVector(String versionId, Integer nGramSize, Integer nGramLevel, Integer vectorSize, String nGramValues) {
         this.versionId = versionId;
-        this.level = level;
-        this.values = values;
+        this.nGramSize = nGramSize;
+        this.nGramLevel = nGramLevel;
+        this.vectorSize = vectorSize;
+        this.nGramValues = nGramValues;
     }
 
-    public Integer getSize() {
-        return size;
+    public Integer getnGramSize() {
+        return nGramSize;
     }
 
     public String getVersionId() {
         return versionId;
     }
 
-    public Integer getLevel() {
-        return level;
+    public Integer getnGramLevel() {
+        return nGramLevel;
     }
 
-    public String getValues() {
-        return values;
+    public String getnGramValues() {
+        return nGramValues;
     }
 
-    public void setSize(Integer size) {
-        this.size = size;
+    public void setnGramSize(Integer nGramSize) {
+        this.nGramSize = nGramSize;
     }
 
     public void setVersionId(String versionId) {
         this.versionId = versionId;
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
+    public void setnGramLevel(Integer nGramLevel) {
+        this.nGramLevel = nGramLevel;
     }
 
-    public void setValues(String values) {
-        this.values = values;
+    public void setnGramValues(String nGramValues) {
+        this.nGramValues = nGramValues;
     }
 
     /**
      * Set the ngram count for a version. If a value already exists, it will be updated.
+     * ATTENTION: this method has a bug
      * @param size
      * @param versionId
      * @param level
      * @param values
      * @return
      */
-    public static NGramVector addOrUpdateNGramVector(Integer size, String versionId, Integer level, String values) {
+    @Deprecated
+    public static NGramVector addOrUpdateNGramVector(String versionId, Integer size, Integer level, Integer vectorSize, String values) {
         Session session = HibernateUtil.openSession();
         NGramVector ngramVector = null;
         Transaction transaction = null;
         try {
             transaction = session.beginTransaction();
-            ngramVector = addOrUpdateNGramVector(size, versionId, level, values);
+            ngramVector = addOrUpdateNGramVector(versionId, size , level, vectorSize, values);
             transaction.commit();
         } catch (HibernateException e) {
             if (transaction != null)
@@ -118,8 +124,8 @@ public class NGramVector implements Serializable {
      * @param session
      * @return
      */
-    public static NGramVector addOrUpdateNGramVector(Integer size, String versionId, Integer level, String values, Session session) {
-        NGramVector ngramVector = new NGramVector(size, versionId, level, values);
+    public static NGramVector addOrUpdateNGramVector(String versionId, Integer size, Integer level, Integer vectorSize, String values, Session session) {
+        NGramVector ngramVector = new NGramVector(versionId, size, level, vectorSize, values);
         session.saveOrUpdate(ngramVector);
         return ngramVector;
     }
