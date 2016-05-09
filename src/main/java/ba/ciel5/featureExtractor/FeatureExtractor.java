@@ -14,6 +14,10 @@ import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import com.google.common.collect.Lists;
 import javafx.util.Pair;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.hibernate.HibernateError;
 import org.hibernate.HibernateException;
@@ -25,7 +29,6 @@ import ba.ciel5.featureExtractor.utils.Config;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,24 +41,29 @@ public class FeatureExtractor {
     private static Map<Version, Map<Integer,Map<Integer,Map<String, Integer>>>> versionNGram = new HashMap<Version, Map<Integer,Map<Integer,Map<String, Integer>>>>();
 
     public static void main(String[] args) {
-        logger = Logger.getLogger("main");
-        logger.log(Level.INFO, "Starting IFeature Extractor.");
 
-        logger.log(Level.INFO, "Reading Arguments.");
+        System.out.println("Reading Arguments.");
         try {
             cfg = new Config();
             cfg.parse(args);
         } catch (ParseException e) {
-            logger.log(Level.SEVERE, "Arguments could not be parsed.", e);
+            System.out.println("Arguments could not be parsed:");
+            System.out.println(e.getMessage());
             exit();
         }
-        logger.log(Level.INFO, "Reading Config Files.");
+        System.out.println("Reading Config Files.");
         try {
             cfg.readConfigFile();
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Config File could not be read.", e);
+            System.out.println("Config File could not be read:");
+            System.out.println(e.getMessage());
             exit();
         }
+        System.setProperty("logfilename", getCfg().getLogFilename());
+        System.setProperty("loglevel", getCfg().getLogLevel());
+
+        logger = Logger.getLogger("main");
+        logger.log(Level.INFO, "Starting IFeature Extractor.");
 
         // Get Repository from DB
         List<Repository> repositories = null;
@@ -253,7 +261,7 @@ public class FeatureExtractor {
 
                     if (nGramCounter[0] % log_interval == 0) {
                         double prc = (double) nGramCounter[0] / size * 100.0;
-                        logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - saved nGrams: " + nGramCounter[0]);
+                        logger.log(Level.INFO, Math.round(prc * 100.0) / 100.0 + "% - versions processed: " + nGramCounter[0]);
                     }
                     nGramCounter[0]++;
                     //for every level in the nGramList without duplicates

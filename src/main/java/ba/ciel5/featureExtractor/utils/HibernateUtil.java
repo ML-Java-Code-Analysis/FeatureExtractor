@@ -5,6 +5,7 @@
  */
 package ba.ciel5.featureExtractor.utils;
 
+import ba.ciel5.featureExtractor.FeatureExtractor;
 import ba.ciel5.featureExtractor.model.*;
 import ba.ciel5.featureExtractor.model.Version;
 import javafx.util.Pair;
@@ -31,7 +32,6 @@ public class HibernateUtil {
      */
     static {
         Configuration configuration = new Configuration();
-        configuration.configure();
         configuration.addAnnotatedClass(FeatureValue.class);
         configuration.addAnnotatedClass(Repository.class);
         configuration.addAnnotatedClass(Commit.class);
@@ -39,6 +39,13 @@ public class HibernateUtil {
         configuration.addAnnotatedClass(Version.class);
         configuration.addAnnotatedClass(Issue.class);
         configuration.addAnnotatedClass(NGramVector.class);
+
+        configuration.setProperty("hibernate.dialect", FeatureExtractor.getCfg().getDatabaseDialect());
+        configuration.setProperty("hibernate.connection.driver_class", FeatureExtractor.getCfg().getDatabaseDriver());
+        configuration.setProperty("hibernate.connection.url", FeatureExtractor.getCfg().getDatabaseUrl());
+        configuration.setProperty("hibernate.connection.username", FeatureExtractor.getCfg().getDatabaseUser());
+        configuration.setProperty("hibernate.connection.password", FeatureExtractor.getCfg().getDatabaseUserPassword());
+
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
     }
