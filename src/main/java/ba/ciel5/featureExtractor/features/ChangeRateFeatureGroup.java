@@ -46,7 +46,8 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         ).collect(Collectors.toList());
         Commit commit = commitResult.get(0);
 
-        List<Commit> olderCommits = getAllOlderCommits(commit, getSortedCommitsByTimestamp(commits));
+        List<Commit> interesstingCommits = getInteresstingCommits(version, commits);
+        List<Commit> olderCommits = getAllOlderCommits(commit, getSortedCommitsByTimestamp(interesstingCommits));
 
         map.put("DBLC", getDaysBetweenLastCommit(commit, olderCommits));
 
@@ -72,6 +73,25 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
         }
 
         return map;
+    }
+
+    /**
+     * filter the commits: Keep only those who have the current version in it
+     * @param version current version
+     * @param commits list of all commits to filter
+     * @return list of commits with the current version in it
+     */
+    private List<Commit> getInteresstingCommits(Version version, List<Commit> commits) {
+        List<Commit> interesstingCommits = commits.stream().filter(c ->
+            c.getVersions().stream()
+                    .filter( v ->
+                            v.getFileId().equals(version.getFileId())
+                    )
+                    .collect(Collectors.toList())
+                    .size() > 0
+        )
+                .collect(Collectors.toList());
+        return interesstingCommits;
     }
 
     /**

@@ -43,6 +43,23 @@ public class FeatureValue implements Serializable {
     }
 
     /**
+     * Overwrite to supress hibernate warning
+     * @param other
+     * @return
+     */
+    public boolean equals(Object other) {
+        return super.equals(other);
+    }
+
+    /**
+     * Overwrite to supress hibernate warning
+     * @return
+     */
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    /**
      * @param featureId The ID of this IFeature type.
      * @param versionId The UUID of the version this value belongs to.
      * @param value     The value this feature has for this version.

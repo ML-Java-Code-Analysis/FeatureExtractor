@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class FeatureExtractor {
     private static Logger logger;
@@ -146,7 +147,8 @@ public class FeatureExtractor {
             session.close();
         });
 
-        saveNGrams(versions);
+        if ( cfg.getFeatureGroups().contains("NGramFeatureGroup"))
+            saveNGrams(versions);
 
         git.closeRepository();
         logger.log(Level.INFO, "ba.ciel5.featureExtractor.FeatureExtractor is done. See ya!");
@@ -182,7 +184,11 @@ public class FeatureExtractor {
 
     private static Set<Class<? extends IFeatureGroup>> getFeatureGroupClasses() {
         Reflections reflections = new Reflections("ba.ciel5.featureExtractor.features");
-        return reflections.getSubTypesOf(IFeatureGroup.class);
+        Set<Class<? extends IFeatureGroup>> classes;
+        classes = reflections.getSubTypesOf(IFeatureGroup.class).stream()
+                .filter( r -> cfg.getFeatureGroups().contains(r.getSimpleName()))
+                .collect(Collectors.toSet());
+        return classes;
     }
 
     private static void processAllFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size, Session session) {
@@ -200,7 +206,8 @@ public class FeatureExtractor {
             char[] code = git.getSourceCode(path, commitId);
             CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
             processFeatures(commits, version, featureGroups, ast, code, session);
-            versionNGram.put(version, processNGrams(commits, version, ast, code));
+            if ( cfg.getFeatureGroups().contains("NGramFeatureGroup"))
+                versionNGram.put(version, processNGrams(commits, version, ast, code));
         } catch (IOException e) {
             String msg = "There was a problem with the file " + path +
                     " from commit " + commitId + ". Skipping this one.";

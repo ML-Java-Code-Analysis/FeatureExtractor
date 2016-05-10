@@ -46,6 +46,23 @@ public class NGramVector implements Serializable {
 
     }
 
+    /**
+     * Overwrite to supress hibernate warning
+     * @param other
+     * @return
+     */
+    public boolean equals(Object other) {
+        return super.equals(other);
+    }
+
+    /**
+     * Overwrite to supress hibernate warning
+     * @return
+     */
+    public int hashCode() {
+        return super.hashCode();
+    }
+
 
     public NGramVector(String versionId, Integer nGramSize, Integer nGramLevel, Integer vectorSize, String nGramValues) {
         this.versionId = versionId;

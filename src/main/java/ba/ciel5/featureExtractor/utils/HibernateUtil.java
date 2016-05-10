@@ -45,6 +45,7 @@ public class HibernateUtil {
         configuration.setProperty("hibernate.connection.url", FeatureExtractor.getCfg().getDatabaseUrl());
         configuration.setProperty("hibernate.connection.username", FeatureExtractor.getCfg().getDatabaseUser());
         configuration.setProperty("hibernate.connection.password", FeatureExtractor.getCfg().getDatabaseUserPassword());
+        configuration.configure();
 
         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
