@@ -14,10 +14,9 @@ import ba.ciel5.featureExtractor.utils.HibernateUtil;
 import com.google.common.collect.Lists;
 import javafx.util.Pair;
 import org.apache.commons.cli.ParseException;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.hibernate.HibernateError;
 import org.hibernate.HibernateException;
@@ -29,8 +28,6 @@ import ba.ciel5.featureExtractor.utils.Config;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class FeatureExtractor {
@@ -63,7 +60,7 @@ public class FeatureExtractor {
         System.setProperty("logfilename", getCfg().getLogFilename());
         System.setProperty("loglevel", getCfg().getLogLevel());
 
-        logger = Logger.getLogger("main");
+        logger = LogManager.getRootLogger();
         logger.log(Level.INFO, "Starting IFeature Extractor.");
 
         // Get Repository from DB
@@ -71,10 +68,10 @@ public class FeatureExtractor {
         try {
             repositories = HibernateUtil.complexQuery("FROM Repository WHERE name = :name", new ArrayList(Arrays.asList(new Pair("name", cfg.getRepositoryName()))));
         } catch (HibernateError e) {
-            logger.log(Level.SEVERE, "DB Query failed", e);
+            logger.log(Level.ERROR, "DB Query failed", e);
         }
         if (repositories.size() != 1) {
-            logger.log(Level.SEVERE, "No repository found or more than one found with name " + cfg.getRepositoryName());
+            logger.log(Level.ERROR, "No repository found or more than one found with name " + cfg.getRepositoryName());
             exit();
         }
         Repository repository = repositories.get(0);
@@ -96,7 +93,7 @@ public class FeatureExtractor {
                                     new Pair("language", "Java")
                             )));
         } catch (HibernateError e) {
-            logger.log(Level.SEVERE, "DB Query failed", e);
+            logger.log(Level.ERROR, "DB Query failed", e);
         }
 
         //Get all commits
@@ -109,7 +106,7 @@ public class FeatureExtractor {
                             Arrays.asList(
                                     new Pair("repositoryId", Integer.parseInt(repository.getId())))));
         } catch (HibernateError e) {
-            logger.log(Level.SEVERE, "DB Query failed", e);
+            logger.log(Level.ERROR, "DB Query failed", e);
         }
         final List<Commit> commits = commitsFromDB;
 
@@ -117,7 +114,7 @@ public class FeatureExtractor {
         try {
             git = new Git(repositoryPath);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Repository " + repositoryPath + " could not be read.", e);
+            logger.log(Level.ERROR, "Repository " + repositoryPath + " could not be read.", e);
             exit();
         }
 
@@ -156,7 +153,7 @@ public class FeatureExtractor {
     }
 
     private static void exit() {
-        logger.log(Level.WARNING, "Quitting program.");
+        logger.log(Level.WARN, "Quitting program.");
         git.closeRepository();
         System.exit(0);
     }
@@ -172,11 +169,11 @@ public class FeatureExtractor {
             } catch (InstantiationException e) {
                 String message = String.format("Could not instantiate IFeatureGroup %s. Message: %s",
                         featureGroupClass.getName(), e.getMessage());
-                logger.log(Level.WARNING, message);
+                logger.log(Level.WARN, message);
             } catch (IllegalAccessException e) {
                 String message = String.format("Could not instantiate IFeatureGroup %s. Message: %s",
                         featureGroupClass.getName(), e.getMessage());
-                logger.log(Level.WARNING, message);
+                logger.log(Level.WARN, message);
             }
         }
         return featureGroups;
@@ -211,7 +208,7 @@ public class FeatureExtractor {
         } catch (IOException e) {
             String msg = "There was a problem with the file " + path +
                     " from commit " + commitId + ". Skipping this one.";
-            logger.log(Level.WARNING, msg, e);
+            logger.log(Level.WARN, msg, e);
         }
     }
 
@@ -227,7 +224,7 @@ public class FeatureExtractor {
                 try {
                     FeatureValue.addOrUpdateFeatureValue(featureId, version.getId(), value, session);
                 } catch (HibernateError e) {
-                    logger.log(Level.SEVERE, "Could not add Features: " + featureId + " with values: " + value, e);
+                    logger.log(Level.ERROR, "Could not add Features: " + featureId + " with values: " + value, e);
                 }
             }
         }

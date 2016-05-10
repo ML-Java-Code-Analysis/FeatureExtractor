@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration>
 
-    <appenders>
+    <Appenders>
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
-        </Console>
-        <File name="file" fileName="${sys:logfilename}">
             <PatternLayout>
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n</Pattern>
+            </PatternLayout>
+        </Console>
+        <File name="file" fileName="${sys:logfilename}" append="false">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n</Pattern>
             </PatternLayout>
         </File>
-    </appenders>
-    <loggers>
+    </Appenders>
+    <Loggers>
         <Root level="${sys:loglevel}">
-            <appender-ref ref="console" level="${sys:loglevel}"/>
-            <appender-ref ref="file" level="${sys:loglevel}"/>
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="file"/>
         </Root>
-    </loggers>
+    </Loggers>
 
 </Configuration>
