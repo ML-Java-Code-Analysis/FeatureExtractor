@@ -63,12 +63,16 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             //do for every file change type
             Map<String, List<Double>> numberOfFiles = getNumberOfFilesForOlderCommits(day, commit, olderCommits);
             Stream.of(FileChangeType.values()).forEach(
-                    t -> putMinMaxMedMeanToMap(map, numberOfFiles.get(t.toString()), "NOF" + t.toString().charAt(0) + "FOC", day)
+                    type -> putMinMaxMedMeanToMap(map, numberOfFiles.get(type.toString()), "NOF" + type.toString().charAt(0) + "FOC", day)
             );
+            //TODO if numberOfFiles.get(type) = 0 put 0
             Stream.of(FileChangeType.values()).forEach(
-                    t -> numberOfFiles.get(t.toString()).forEach(
-                            cs -> map.put("NO" + t.toString().charAt(0) + "F" + day.toString() + "D", cs)
-                    )
+                            type ->
+                            map.put("NO" + type.toString().charAt(0) + "F" + day.toString() + "D", numberOfFiles.get(type.toString())
+                                    .stream()
+                                    .mapToDouble(value -> value)
+                                    .sum())
+
             );
         }
 
