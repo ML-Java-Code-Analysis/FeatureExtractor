@@ -23,8 +23,6 @@ import java.util.stream.Stream;
  */
 public class ChangeRateFeatureGroup implements IFeatureGroup {
 
-    private static Logger logger;
-
     private enum IssueType {
         BUG, ENHANCEMENT, OTHER
     }
@@ -36,7 +34,6 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
     @Override
     public Map<String, Double> extract(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
 
-        logger = Logger.getLogger("main");
 
         Map<String, Double> map = new HashMap<String, Double>();
         List<Integer> days = new ArrayList<Integer>(Arrays.asList(1, 7, 30, 90, 180, 365, 730));
@@ -65,7 +62,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             Stream.of(FileChangeType.values()).forEach(
                     type -> putMinMaxMedMeanToMap(map, numberOfFiles.get(type.toString()), "NOF" + type.toString().charAt(0) + "FOC", day)
             );
-            //TODO if numberOfFiles.get(type) = 0 put 0
+
             Stream.of(FileChangeType.values()).forEach(
                             type ->
                             map.put("NO" + type.toString().charAt(0) + "F" + day.toString() + "D", numberOfFiles.get(type.toString())

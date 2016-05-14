@@ -48,8 +48,6 @@ public class NGramFeatureGroup {
         List<String> all = new ArrayList<String>();
         List<String> statements = new ArrayList<String>();
 
-        //TODO USE NUMBERSS!!!
-
         final List<Integer> statementNodesToInclude = new ArrayList<Integer>(
                 Arrays.asList(
                         ASTNode.ANONYMOUS_CLASS_DECLARATION,
