@@ -2,13 +2,8 @@ package ba.ciel5.featureExtractor.features;
 
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Import;
 import org.eclipse.jdt.core.dom.*;
-
 import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-
 import static java.util.Arrays.asList;
 
 /**
