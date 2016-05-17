@@ -1,18 +1,12 @@
 package ba.ciel5.featureExtractor.features;
 
-import ba.ciel5.featureExtractor.features.IFeatureGroup;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Issue;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.Average;
-import ba.ciel5.featureExtractor.utils.HibernateUtil;
-import javafx.util.Pair;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.hibernate.HibernateError;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -161,10 +155,10 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
      * @param days
      * @return
      */
-    private long subtractDaysToDate(Date date, int days) {
+    private long subtractDaysFromDate(Date date, int days) {
         Calendar calenderDate = Calendar.getInstance();
         calenderDate.setTime(date);
-        calenderDate.add(Calendar.DATE, (-1 * days));
+        calenderDate.add(Calendar.DATE, ((-1) * days));
         return calenderDate.getTime().getTime();
     }
 
@@ -225,7 +219,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return 0.0;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
@@ -258,7 +252,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return 0.0;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
@@ -291,7 +285,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return 0.0;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
@@ -325,14 +319,14 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return 0.0;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
         Double issueCount = 0.0;
 
         for (Commit c : commitsInRange) {
-            List<Issue> issues = (List<Issue>) commit.getIssues();
+            List<Issue> issues = (List<Issue>) c.getIssues();
             for (Issue i : issues)
                 if (i.getType().equals(type))
                     issueCount++;
@@ -356,7 +350,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return daysBetweenOlderCommits;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
@@ -393,7 +387,7 @@ public class ChangeRateFeatureGroup implements IFeatureGroup {
             return map;
 
         //Get date threshold
-        Long dateThreshold = subtractDaysToDate(commit.getTimestamp(), days);
+        Long dateThreshold = subtractDaysFromDate(commit.getTimestamp(), days);
 
         //Get commits that are newer than the threshold
         List<Commit> commitsInRange = getCommitsInRange(dateThreshold, olderCommits);
