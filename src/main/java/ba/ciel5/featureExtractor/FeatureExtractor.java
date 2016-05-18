@@ -110,7 +110,7 @@ public class FeatureExtractor {
         }
         final List<Commit> commits = commitsFromDB;
 
-        // Repository intialisieren
+        // Initialize repository
         try {
             git = new Git(repositoryPath);
         } catch (IOException e) {
@@ -152,12 +152,19 @@ public class FeatureExtractor {
         exit();
     }
 
+    /**
+     * program exit
+     */
     private static void exit() {
         logger.log(Level.WARN, "Quitting program.");
         git.closeRepository();
         System.exit(0);
     }
 
+    /**
+     * Get a list of feature groups with reflections
+     * @return all classes in the feature package
+     */
     private static List<IFeatureGroup> getFeatureGroups() {
         List<IFeatureGroup> featureGroups = new ArrayList<IFeatureGroup>();
         Set<Class<? extends IFeatureGroup>> featureGroupClasses = getFeatureGroupClasses();
@@ -179,6 +186,11 @@ public class FeatureExtractor {
         return featureGroups;
     }
 
+    /**
+     * Get a class by name which extends IFeatureGroup and is in the feature group package
+     * Filter Feature by config
+     * @return
+     */
     private static Set<Class<? extends IFeatureGroup>> getFeatureGroupClasses() {
         Reflections reflections = new Reflections("ba.ciel5.featureExtractor.features");
         Set<Class<? extends IFeatureGroup>> classes;
@@ -188,6 +200,15 @@ public class FeatureExtractor {
         return classes;
     }
 
+    /**
+     * Enable the features on all versions
+     * @param commits all commits
+     * @param version the proccessed version
+     * @param featureGroups the features to enable
+     * @param log_interval how often should we log
+     * @param size the size of the version array (for logging)
+     * @param session db session
+     */
     private static void processAllFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, int log_interval, int size, Session session) {
         String path = version.getPath();
         String commitId = version.getCommitId();
@@ -202,7 +223,9 @@ public class FeatureExtractor {
         try {
             char[] code = git.getSourceCode(path, commitId);
             CompilationUnit ast = AbstractSyntaxTreeUtil.parse(code);
+            //process normal features
             processFeatures(commits, version, featureGroups, ast, code, session);
+            //process nGrams
             if ( cfg.getFeatureGroups().contains("NGramFeatureGroup"))
                 versionNGram.put(version, processNGrams(commits, version, ast, code));
         } catch (IOException e) {
@@ -212,6 +235,15 @@ public class FeatureExtractor {
         }
     }
 
+    /**
+     * Process all normal features (except nGrams)
+     * @param commits all commits
+     * @param version the proccessed version
+     * @param featureGroups the features to enable
+     * @param ast abtract syntax tree of processed version
+     * @param code code char array of processed version
+     * @param session db session
+     */
     private static void processFeatures(List<Commit> commits, Version version, List<IFeatureGroup> featureGroups, CompilationUnit ast, char[] code, Session session) {
         for (IFeatureGroup featureGroup : featureGroups) {
             Map<String, Double> features = featureGroup.extract(commits, version, ast, code);
@@ -230,6 +262,14 @@ public class FeatureExtractor {
         }
     }
 
+    /**
+     * Process nGrams
+     * @param commits all commits
+     * @param version the proccessed version
+     * @param ast abtract syntax tree of processed version
+     * @param code code char array of processed version
+     * @return returns the nGrams for the version
+     */
     private static  Map<Integer,Map<Integer,Map<String, Integer>>> processNGrams(List<Commit> commits, Version version, CompilationUnit ast, char[] code) {
         Map<Integer,Map<Integer,Map<String, Integer>>> nGrams = null;
         NGramFeatureGroup nGramFeatureGroup = new NGramFeatureGroup();

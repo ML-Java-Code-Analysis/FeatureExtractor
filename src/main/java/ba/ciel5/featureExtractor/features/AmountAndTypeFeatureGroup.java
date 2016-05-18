@@ -2,15 +2,11 @@ package ba.ciel5.featureExtractor.features;
 
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
-import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
 import org.eclipse.jdt.core.dom.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created on 14.05.2016.

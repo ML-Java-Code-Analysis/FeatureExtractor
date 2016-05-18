@@ -196,8 +196,6 @@ public class CodeComplexityFeatureGroup implements IFeatureGroup {
 
 
         //generate Halstead metrics
-        // Quellen: http://acjournal.in/files/documents/rnr-2015-7-39.pdf (Source)
-        // Quellen: http://www.whiteboxtest.com/Halstead-software-science.php
         Double n1 = operators.size() / 1.0;
         Double n2 = operands.size() / 1.0;
         Double bigN1 = operators.entrySet().stream().mapToDouble(Map.Entry::getValue).sum();
@@ -237,9 +235,6 @@ public class CodeComplexityFeatureGroup implements IFeatureGroup {
         map.put("halsteadB", numberOfDeliveredBugs);
 
         //generate McCabe Cyclomatic complexity number
-        //Quellen: metrics plugin : http://sourceforge.net/projects/metrics2/
-        //Quellen: http://www.literateprogramming.com/mccabe.pdf
-
         Double mccabePerMethod = 0.0;
         if (methodCount[0] != 0)
             mccabePerMethod = mcCabeComplexity[0] / methodCount[0];

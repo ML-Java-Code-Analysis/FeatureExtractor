@@ -7,7 +7,6 @@ import ba.ciel5.featureExtractor.FeatureExtractor;
 import ba.ciel5.featureExtractor.model.Commit;
 import ba.ciel5.featureExtractor.model.Version;
 import ba.ciel5.featureExtractor.utils.AbstractSyntaxTreeUtil;
-import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -432,7 +431,7 @@ public class NGramFeatureGroup {
     }
 
     /**
-     * Count how often a character appeas in the string
+     * Count how often a character appears in the string
      * @param haystack string
      * @param needle character to search
      * @return how often does it appear
